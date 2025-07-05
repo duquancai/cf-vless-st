@@ -1,11 +1,9 @@
-﻿
-
-//订阅地址：https://域名/UUID/vless
+﻿//订阅地址：https://域名/UUID/vless
 
 import { connect } from 'cloudflare:sockets';
 
 const config = {
-  id: '123abc',
+  id: '123adu',
   uuid: '3ad36a60-f126-4b5d-a252-c6455c218ebc',//部署时请更新
   node: 'cloudflare.9jy.cc',
   enableProxy: true,
