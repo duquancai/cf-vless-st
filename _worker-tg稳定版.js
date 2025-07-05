@@ -204,7 +204,7 @@ async function proxyPipeline(ws, tcp, initialData) {
 
 function generateVlessConfig(host) {
   if (vlessConfigCache.has(host)) return vlessConfigCache.get(host);
-  const configStr = `vless://${config.uuid}@${config.node}:443?encryption=none&security=tls&sni=${host}&type=ws&host=${host}&path=${encodeURIComponent('/?ed=2560')}#${encodeURIComponent(config.nodeName)}`;
+  const configStr = btoa(`vless://${config.uuid}@${config.node}:443?encryption=none&security=tls&sni=${host}&type=ws&host=${host}&path=${encodeURIComponent('/?ed=2560')}#${encodeURIComponent(config.nodeName)}`);
   vlessConfigCache.set(host, configStr);
   return configStr;
 } 
