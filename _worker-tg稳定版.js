@@ -6,10 +6,10 @@ import { connect } from 'cloudflare:sockets';
 
 const config = {
   id: '123abc',
-  uuid: '3ad36a60-f126-4b5d-a252-c6455c218ebc',
+  uuid: '3ad36a60-f126-4b5d-a252-c6455c218ebc',//部署时请更新
   node: 'ns5.cloudflare.com',
   enableProxy: true,
-  proxyIP: 'ProxyIP.US.CMLiussss.net:443',
+  proxyIP: 'ProxyIP.US.CMLiussss.net:443',//无法访问cf网站时更新
   nodeName: '天书系列tg稳定版'
 };
 
