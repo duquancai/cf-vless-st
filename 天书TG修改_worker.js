@@ -75,7 +75,7 @@ export default {
   async fetch(访问请求, env) {
     哎呀呀这是我的ID啊   = 读取环境变量('ID',        哎呀呀这是我的ID啊, env);
     哎呀呀这是我的VL密钥 = 读取环境变量('UUID',      哎呀呀这是我的VL密钥, env);
-    我的优选             = 读取环境变量('IP',        我的优选,         env);
+    我的优选             = 读取环境变量('IP',        我的优选,         env)||'cloudflare.9jy.cc';
     我的优选TXT          = 读取环境变量('TXT',       我的优选TXT,      env);
     反代IP               = 读取环境变量('PROXYIP',   反代IP,           env);
     咦这是我的私钥哎       = 读取环境变量('私钥',       咦这是我的私钥哎, env);
