@@ -11,9 +11,8 @@ let 我的优选TXT = [
   // 'https://raw.githubusercontent.com/shulng/shulng/refs/heads/main/ip.txt', // 测试地址
   // 'https://raw.githubusercontent.com/cmliu/CFcdnVmess2sub/main/addressesapi.txt', // 测试地址
 ];
-let 我的NAT64 = '2602:fc59:11:64::';
-// let 我的NAT64 = '2602:fc59:11:64::';
-//let 反代IP = 'ProxyIP.US.CMLiussss.net';
+//let 我的NAT64 = '2602:fc59:11:64::';
+let 反代IP = 'ProxyIP.Vultr.CMLiussss.net';
 let 我的节点名字 = '天书TG暴力下载';
 let 通 = 'vl', 用 = 'ess', 符号 = '://';
 
