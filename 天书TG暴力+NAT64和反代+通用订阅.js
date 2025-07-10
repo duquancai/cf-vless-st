@@ -11,7 +11,8 @@ let 我的优选TXT = [
   // 'https://raw.githubusercontent.com/shulng/shulng/refs/heads/main/ip.txt', // 测试地址
   // 'https://raw.githubusercontent.com/cmliu/CFcdnVmess2sub/main/addressesapi.txt', // 测试地址
 ];
-//let 我的NAT64 = '2602:fc59:11:64::';
+let 我的NAT64 = '2001:67c:2960:6464::';
+// let 我的NAT64 = '2a01:4f9:c010:3f02:64::';
 let 反代IP = 'ProxyIP.Vultr.CMLiussss.net';
 let 我的节点名字 = '天书TG暴力下载';
 let 通 = 'vl', 用 = 'ess', 符号 = '://';
@@ -59,7 +60,7 @@ async function 获取合并节点列表() {
       const 文本内容 = await 响应.text();
       const 节点列表 = 文本内容.split('\n').map(行 => 行.trim()).filter(行 => 行);
       所有节点.push(...节点列表);
-    } catch {}
+    } catch { }
   }
   return 所有节点;
 }
@@ -125,7 +126,7 @@ async function 解析VL协议头(缓冲区) {
     const 直连套接字 = await connect({ hostname: 目标主机, port: 端口号 });
     await 直连套接字.opened;
     return { TCP套接字: 直连套接字, 初始数据 };
-  } catch {}
+  } catch { }
 
   // 尝试NAT64转换连接
   try {
@@ -143,7 +144,7 @@ async function 解析VL协议头(缓冲区) {
     });
     await NAT64套接字.opened;
     return { TCP套接字: NAT64套接字, 初始数据 };
-  } catch {}
+  } catch { }
 
   // 使用反代服务器作为兜底方案
   if (!反代IP) throw Error('连接失败');
@@ -163,19 +164,19 @@ async function 建立数据传输管道(WebSocket接口, TCP套接字, 初始数
   const 读取器 = TCP套接字.readable.getReader();
   if (初始数据) await 写入器.write(初始数据);
   WebSocket接口.addEventListener('message', async 事件 => {
-    try { await 写入器.write(事件.data); } catch {}
+    try { await 写入器.write(事件.data); } catch { }
   });
   try {
     while (true) {
       const { value: 数据块, done: 读取完成 } = await 读取器.read();
       if (读取完成) break;
-      try { await WebSocket接口.send(数据块); } catch {}
+      try { await WebSocket接口.send(数据块); } catch { }
     }
   } finally {
-    try { WebSocket接口.close(); } catch {}
-    try { 读取器.cancel(); } catch {}
-    try { 写入器.releaseLock(); } catch {}
-    try { TCP套接字.close(); } catch {}
+    try { WebSocket接口.close(); } catch { }
+    try { 读取器.cancel(); } catch { }
+    try { 写入器.releaseLock(); } catch { }
+    try { TCP套接字.close(); } catch { }
   }
 }
 
