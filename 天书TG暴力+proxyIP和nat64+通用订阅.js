@@ -2,8 +2,7 @@
 import { connect } from 'cloudflare:sockets';
 
 // 订阅配置参数
-let 哎呀呀这是我的ID啊 = '123456'; // 订阅路径
-let 哎呀呀这是我的VL密钥 = '53378985-5c54-4607-a69b-6347694cb185'; // UUID
+let 哎呀呀这是我的VL密钥 = '53378985-5c54-4607-a69b-6347694cb185'; // UUID及订阅路径
 let 我的优选 = [
   'freeyx.cloudflare88.eu.org:443#Japan丨节点',
 ];
@@ -24,11 +23,11 @@ export default {
     const 请求URL = new URL(访问请求.url);
     if (!升级标头 || 升级标头 !== 'websocket') {
       switch (请求URL.pathname) {
-        case `/${哎呀呀这是我的ID啊}`:
-          return new Response(生成订阅页面(哎呀呀这是我的ID啊, 访问请求.headers.get('Host')), {
+        case `/${哎呀呀这是我的VL密钥}`:
+          return new Response(生成订阅页面(哎呀呀这是我的VL密钥, 访问请求.headers.get('Host')), {
             status: 200, headers: { 'Content-Type': 'text/html;charset=utf-8' }
           });
-        case `/${哎呀呀这是我的ID啊}/${通}${用}`: {
+        case `/${哎呀呀这是我的VL密钥}/${通}${用}`: {
           const 节点列表 = await 获取合并节点列表();
           return new Response(生成通用配置文件(访问请求.headers.get('Host'), 节点列表), {
             status: 200, headers: { 'Content-Type': 'text/plain;charset=utf-8' }
