@@ -154,28 +154,7 @@ async function 解析VL协议头(缓冲区) {
   return { TCP套接字: NAT64套接字, 初始数据 }; 
 }
 
-// 建立WebSocket与TCP套接字之间的双向数据传输
-/*async function 建立数据传输管道(WebSocket接口, TCP套接字, 初始数据) {
-  WebSocket接口.send(new Uint8Array([0, 0]));
-  const 写入器 = TCP套接字.writable.getWriter();
-  const 读取器 = TCP套接字.readable.getReader();
-  if (初始数据) await 写入器.write(初始数据);
-  WebSocket接口.addEventListener('message', async 事件 => {
-    try { await 写入器.write(事件.data); } catch { }
-  });
-  try {
-    while (true) {
-      const { value: 数据块, done: 读取完成 } = await 读取器.read();
-      if (读取完成) break;
-      try { await WebSocket接口.send(数据块); } catch { }
-    }
-  } finally {
-    try { WebSocket接口.close(); } catch { }
-    try { 读取器.cancel(); } catch { }
-    try { 写入器.releaseLock(); } catch { }
-    try { TCP套接字.close(); } catch { }
-  }
-}*/
+// 建立WebSocket与TCP套接字之间的传输
 async function 建立数据传输管道(WebSocket接口, Tcp套接字, 初始数据) {
   WebSocket接口.send(new Uint8Array([0, 0]));
   const 写入器 = Tcp套接字.writable.getWriter();
