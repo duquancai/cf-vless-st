@@ -11,9 +11,9 @@ let 我的优选TXT = [
   // 'https://raw.githubusercontent.com/shulng/shulng/refs/heads/main/ip.txt', // 测试地址
   // 'https://raw.githubusercontent.com/cmliu/CFcdnVmess2sub/main/addressesapi.txt', // 测试地址
 ];
+let 我的proxyIP = 'ProxyIP.Vultr.CMLiussss.net';
+//let 我的NAT64 = '2602:fc59:11:64::';
 let 我的NAT64 = '2001:67c:2960:6464::';
-// let 我的NAT64 = '2602:fc59:11:64::';
-let 反代IP = 'ProxyIP.Vultr.CMLiussss.net';
 let 我的节点名字 = '天书TG暴力下载';
 let 通 = 'vl', 用 = 'ess', 符号 = '://';
 
@@ -60,7 +60,7 @@ async function 获取合并节点列表() {
       const 文本内容 = await 响应.text();
       const 节点列表 = 文本内容.split('\n').map(行 => 行.trim()).filter(行 => 行);
       所有节点.push(...节点列表);
-    } catch { }
+    } catch {}
   }
   return 所有节点;
 }
@@ -126,39 +126,36 @@ async function 解析VL协议头(缓冲区) {
     const 直连套接字 = await connect({ hostname: 目标主机, port: 端口号 });
     await 直连套接字.opened;
     return { TCP套接字: 直连套接字, 初始数据 };
-  } catch { }
-
-  // 尝试NAT64转换连接
-  try {
-    let NAT64目标;
-    if (/^\d+\.\d+\.\d+\.\d+$/.test(目标主机)) {  // IPv4地址
-      NAT64目标 = 转换到NAT64的IPv6(目标主机);
-    } else if (目标主机.includes(':')) {  // IPv6地址
-      throw new Error('IPv6地址无需转换');
-    } else {  // 域名
-      NAT64目标 = await 获取IPv6代理地址(目标主机);
-    }
-    const NAT64套接字 = await connect({
-      hostname: NAT64目标.replace(/^["'`]+|["'`]+$/g, ''),
-      port: 端口号
+  } catch {}
+   // 使用反代服务器连接
+  try{
+    const [代理主机, 代理端口] = 我的proxyIP.split(':');
+    const 反代套接字 = await connect({
+      hostname: 代理主机,
+      port: Number(代理端口) || 端口号
     });
-    await NAT64套接字.opened;
-    return { TCP套接字: NAT64套接字, 初始数据 };
-  } catch { }
-
-  // 使用反代服务器作为兜底方案
-  if (!反代IP) throw Error('连接失败');
-  const [代理主机, 代理端口] = 反代IP.split(':');
-  const 反代套接字 = await connect({
-    hostname: 代理主机,
-    port: Number(代理端口) || 端口号
+    await 反代套接字.opened;
+    return { TCP套接字: 反代套接字, 初始数据 };
+  }catch {}
+ // 以NAT64作为兜底
+  let NAT64目标;
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(目标主机)) {  // IPv4地址
+    NAT64目标 = 转换到NAT64的IPv6(目标主机);
+  } else if (目标主机.includes(':')) {  // IPv6地址
+    throw new Error('IPv6地址无需转换');
+  } else {  // 域名
+    NAT64目标 = await 获取IPv6代理地址(目标主机);
+  }
+  const NAT64套接字 = await connect({
+    hostname: NAT64目标.replace(/^["'`]+|["'`]+$/g, ''),
+    port: 端口号
   });
-  await 反代套接字.opened;
-  return { TCP套接字: 反代套接字, 初始数据 };
+  await NAT64套接字.opened;
+  return { TCP套接字: NAT64套接字, 初始数据 }; 
 }
 
 // 建立WebSocket与TCP套接字之间的双向数据传输
-async function 建立数据传输管道(WebSocket接口, TCP套接字, 初始数据) {
+/*async function 建立数据传输管道(WebSocket接口, TCP套接字, 初始数据) {
   WebSocket接口.send(new Uint8Array([0, 0]));
   const 写入器 = TCP套接字.writable.getWriter();
   const 读取器 = TCP套接字.readable.getReader();
@@ -177,6 +174,37 @@ async function 建立数据传输管道(WebSocket接口, TCP套接字, 初始数
     try { 读取器.cancel(); } catch { }
     try { 写入器.releaseLock(); } catch { }
     try { TCP套接字.close(); } catch { }
+  }
+}*/
+async function 建立数据传输管道(WebSocket接口, Tcp套接字, 初始数据) {
+  WebSocket接口.send(new Uint8Array([0, 0]));
+  const 写入器 = Tcp套接字.writable.getWriter();
+  const 读取器 = Tcp套接字.readable.getReader();
+  if (初始数据) {
+    await 写入器.write(初始数据);
+  }
+  let 传输队列 = Promise.resolve();
+  WebSocket接口.addEventListener('message', event => {
+    传输队列 = 传输队列
+      .then(async () => {
+        await 写入器.write(event.data);
+      })
+      .catch(() => { });
+  });
+  try {
+    while (true) {
+      const { done, value } = await 读取器.read();
+      if (done) break;
+      传输队列 = 传输队列
+        .then(() => {
+          WebSocket接口.send(value);
+        })
+        .catch(() => { });
+    }
+  } finally {
+    WebSocket接口.close();
+    写入器.releaseLock();
+    Tcp套接字.close();
   }
 }
 
