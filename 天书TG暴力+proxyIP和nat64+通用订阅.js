@@ -126,15 +126,15 @@ async function 解析VL协议头(缓冲区) {
     await 直连套接字.opened;
     return { TCP套接字: 直连套接字, 初始数据 };
   } catch {}
-   // 使用反代服务器连接
+   // 使用proxyIP连接
   try{
     const [代理主机, 代理端口] = 我的proxyIP.split(':');
-    const 反代套接字 = await connect({
+    const proxyIP套接字 = await connect({
       hostname: 代理主机,
       port: Number(代理端口) || 端口号
     });
-    await 反代套接字.opened;
-    return { TCP套接字: 反代套接字, 初始数据 };
+    await proxyIP套接字.opened;
+    return { TCP套接字: proxyIP套接字, 初始数据 };
   }catch {}
  // 以NAT64作为兜底
   let NAT64目标;
