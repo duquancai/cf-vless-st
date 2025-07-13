@@ -13,6 +13,8 @@ let 我的优选TXT = [
 let 我的proxyIP = 'ProxyIP.Vultr.CMLiussss.net';
 //let 我的NAT64 = '2602:fc59:11:64::';
 let 我的NAT64 = '2001:67c:2960:6464::';
+let 我的S5代理 = 'admin:admin@149.104.0.249:1080';
+
 let 我的节点名字 = '天书TG暴力下载';
 let 通 = 'vl', 用 = 'ess', 符号 = '://';
 
@@ -59,7 +61,7 @@ async function 获取合并节点列表() {
       const 文本内容 = await 响应.text();
       const 节点列表 = 文本内容.split('\n').map(行 => 行.trim()).filter(行 => 行);
       所有节点.push(...节点列表);
-    } catch {}
+    } catch { }
   }
   return 所有节点;
 }
@@ -125,9 +127,9 @@ async function 解析VL协议头(缓冲区) {
     const 直连套接字 = await connect({ hostname: 目标主机, port: 端口号 });
     await 直连套接字.opened;
     return { TCP套接字: 直连套接字, 初始数据 };
-  } catch {}
-   // 使用proxyIP连接
-  try{
+  } catch { }
+  // 使用proxyIP连接
+  try {
     const [代理主机, 代理端口] = 我的proxyIP.split(':');
     const proxyIP套接字 = await connect({
       hostname: 代理主机,
@@ -135,22 +137,42 @@ async function 解析VL协议头(缓冲区) {
     });
     await proxyIP套接字.opened;
     return { TCP套接字: proxyIP套接字, 初始数据 };
-  }catch {}
- // 以NAT64作为兜底
-  let NAT64目标;
-  if (/^\d+\.\d+\.\d+\.\d+$/.test(目标主机)) {  // IPv4地址
-    NAT64目标 = 转换到NAT64的IPv6(目标主机);
-  } else if (目标主机.includes(':')) {  // IPv6地址
-    throw new Error('IPv6地址无需转换');
-  } else {  // 域名
-    NAT64目标 = await 获取IPv6代理地址(目标主机);
+  } catch { }
+  // 以NAT64作代理连接
+  try {
+    let NAT64目标;
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(目标主机)) {  // IPv4地址
+      NAT64目标 = 转换到NAT64的IPv6(目标主机);
+    } else if (目标主机.includes(':')) {  // IPv6地址
+      throw new Error('IPv6地址无需转换');
+    } else {  // 域名
+      NAT64目标 = await 获取IPv6代理地址(目标主机);
+    }
+    const NAT64套接字 = await connect({
+      hostname: NAT64目标.replace(/^["'`]+|["'`]+$/g, ''),
+      port: 端口号
+    });
+    await NAT64套接字.opened;
+    return { TCP套接字: NAT64套接字, 初始数据 };
+  } catch { }
+
+  // 如果上面三种都失败，使用提供的s5代理兜底
+  try {
+    const [用户名密码, 主机端口] = 我的S5代理.split('@');
+    const [主机, 端口] = 主机端口.split(':')
+    const s5套接字 = await connect({
+      hostname: 主机,
+      port: Number(端口),
+    });
+    await s5套接字.opened;
+    // 传递身份验证信息
+    const s5Auth = 'Basic ' + btoa(`${用户名密码}`);
+    s5套接字.write(new TextEncoder().encode(s5Auth));
+    return { TCP套接字: s5套接字, 初始数据 };
+  } catch (err) {
+    console.error('所有连接方式都失败', err);
+    throw new Error('无法连接到任何代理');
   }
-  const NAT64套接字 = await connect({
-    hostname: NAT64目标.replace(/^["'`]+|["'`]+$/g, ''),
-    port: 端口号
-  });
-  await NAT64套接字.opened;
-  return { TCP套接字: NAT64套接字, 初始数据 }; 
 }
 
 // 建立WebSocket与TCP套接字之间的传输
