@@ -2,7 +2,7 @@
 import { connect } from 'cloudflare:sockets';
 
 // 订阅配置参数
-let 哎呀呀这是我的VL密钥 = '53378985-5c54-4607-a69b-6347694cb185'; // UUID及订阅路径
+let 哎呀呀这是我的VL密钥 = '06d7531c-87f1-445a-adc8-1933878e30b1'; // UUID及订阅路径
 let 我的优选 = [
   'freeyx.cloudflare88.eu.org:443#Japan丨节点',
 ];
@@ -13,7 +13,6 @@ let 我的优选TXT = [
 let 我的proxyIP = 'ProxyIP.Vultr.CMLiussss.net';
 //let 我的NAT64 = '2602:fc59:11:64::';
 let 我的NAT64 = '2001:67c:2960:6464::';
-let 我的S5代理 = 'admin:admin@149.104.0.249:1080';
 
 let 我的节点名字 = '天书TG暴力下载';
 let 通 = 'vl', 用 = 'ess', 符号 = '://';
@@ -128,6 +127,7 @@ async function 解析VL协议头(缓冲区) {
     await 直连套接字.opened;
     return { TCP套接字: 直连套接字, 初始数据 };
   } catch { }
+
   // 使用proxyIP连接
   try {
     const [代理主机, 代理端口] = 我的proxyIP.split(':');
@@ -138,6 +138,7 @@ async function 解析VL协议头(缓冲区) {
     await proxyIP套接字.opened;
     return { TCP套接字: proxyIP套接字, 初始数据 };
   } catch { }
+  
   // 以NAT64作代理连接
   try {
     let NAT64目标;
@@ -155,24 +156,6 @@ async function 解析VL协议头(缓冲区) {
     await NAT64套接字.opened;
     return { TCP套接字: NAT64套接字, 初始数据 };
   } catch { }
-
-  // 如果上面三种都失败，使用提供的s5代理兜底
-  try {
-    const [用户名密码, 主机端口] = 我的S5代理.split('@');
-    const [主机, 端口] = 主机端口.split(':')
-    const s5套接字 = await connect({
-      hostname: 主机,
-      port: Number(端口),
-    });
-    await s5套接字.opened;
-    // 传递身份验证信息
-    const s5Auth = 'Basic ' + btoa(`${用户名密码}`);
-    s5套接字.write(new TextEncoder().encode(s5Auth));
-    return { TCP套接字: s5套接字, 初始数据 };
-  } catch (err) {
-    console.error('所有连接方式都失败', err);
-    throw new Error('无法连接到任何代理');
-  }
 }
 
 // 建立WebSocket与TCP套接字之间的传输
