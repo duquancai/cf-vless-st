@@ -2,7 +2,7 @@
 //2、支持反代开关，私钥开关，订阅隐藏开关功能，clash私钥防止被薅请求数
 //4、支持SOCKS5，支持S5全局反代，SOCKS5和原始反代只能二选一，SOCKS5握手过程较为繁杂，建议有高速稳定SOCKS5的人使用
 //5、可能支持的环境变量名【SOCKS5】账号，【SOCKS5OPEN】开关S5反代true或false，【SOCKS5GLOBAL】全局S5反代落地true或false，【PROXYIP】反代IP
-//【NAT64】反代账号。
+//也支持【NAT64】环境变量反代。
 //6、不用在意脚本内那些奇怪的变量名，根据后面注释的备注去改，大概也就配置区块看一下备注就行，clash配置在底部，懂的可以根据自身需求修改
 //7、纯手搓配置，去除任何API外链，直接改好了部署就行，这样安全性史无前例
 //8、通用订阅不支持私钥功能，使用通用订阅需关闭私钥功能再订阅节点，CF不支持自身1.1.1.1的DNS解析，如果无法连通可以检查客户端DNS设置
@@ -29,14 +29,12 @@ let 我的优选TXT = [ //支持多TXT链接，可以汇聚各路大神的节点
 
 let 启用反代功能 = false //选择是否启用反代功能【总开关】，false，true，现在你可以自由的选择是否启用反代功能了
 let 反代IP = 'ProxyIP.Vultr.CMLiussss.net' //反代IP或域名，反代IP端口一般情况下不用填写，如果你非要用非标反代的话，可以填'ts.hpc.tw:443'这样
-
 let 启用NAT64功能 = true //选择是否启用NAT64功能【总开关】，false，true，现在你可以自由的选择是否启用NAT64功能了
-let 我的NAT64的IP = '2001:67c:2960:6464::' //NAT64的IP长得像这样，格式[2a09:bac5:6388:1250::1d3:87]:443
+let 我的NAT64的IP = '2001:67c:2960:6464::' //NAT64的IP的前段部分! 格式[2a09:bac5:6388:1250::1d3:87]:443
 let 启用SOCKS5反代 = false //选择是否启用SOCKS5反代功能【总开关】，false，true
+let 我的SOCKS5账号 = '@Enkelte_notif:@Notif_Chat@115.91.26.114:2470' //格式'账号:密码@地址:端口'
 //优先级为：反代ip--->NAT64反代--->SOCKS5反代！
-
 let 启用SOCKS5全局反代 = false //选择是否启用SOCKS5全局反代，启用后所有访问都是S5的落地【无论你客户端选什么节点】，访问路径是客户端--CF--SOCKS5，当然启用此功能后延迟=CF+SOCKS5，带宽取决于SOCKS5的带宽，不再享受CF高速和随时满带宽的待遇
-let 我的SOCKS5账号 = '123:123@13.113.192.27:1080' //格式'账号:密码@地址:端口'
 
 let 我的节点名字 = '天书11' //自己的节点名字【统一名称】
 //////////////////////////////////////////////////////////////////////////流控配置////////////////////////////////////////////////////////////////////////
@@ -233,7 +231,9 @@ async function 解析VL标头(VL数据, WS接口, TCP接口) {
         }
       } else {
         try {
-          TCP接口 = await 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口);
+          if (启用SOCKS5反代) {
+            TCP接口 = await 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口);
+          }
         } catch { }
       }
     }
@@ -435,7 +435,7 @@ async function 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口
   }
 }
 async function 获取SOCKS5账号(SOCKS5) {
-  const [账号段, 地址段] = SOCKS5.split("@");
+  const [账号段, 地址段] = SOCKS5.split(/@(\d+\.\d+\.\d+\.\d+:\d+)$/);
   const [账号, 密码] = [账号段.slice(0, 账号段.lastIndexOf(":")), 账号段.slice(账号段.lastIndexOf(":") + 1)];
   const [地址, 端口] = [地址段.slice(0, 地址段.lastIndexOf(":")), 地址段.slice(地址段.lastIndexOf(":") + 1)];
   return { 账号, 密码, 地址, 端口 };
@@ -444,18 +444,34 @@ async function 获取SOCKS5账号(SOCKS5) {
 function 转换到NAT64的IPv6(IPv4地址) {
   const 地址段 = IPv4地址.split('.');
   if (地址段.length !== 4) throw new Error('无效的IPv4地址');
-  const 十六进制段 = 地址段.map(段 => Number(段).toString(16).padStart(2, '0'));
+  const 十六进制段 = 地址段.map(part => {
+    const num = parseInt(part, 10);
+    if (num < 0 || num > 255) {
+      throw new Error('无效的IPv4地址段');
+    }
+    return num.toString(16).padStart(2, '0');
+  });
   return `[${我的NAT64的IP}${十六进制段[0]}${十六进制段[1]}:${十六进制段[2]}${十六进制段[3]}]`;
 }
 
 async function 获取IPv6代理地址(域名) {
-  const DNS响应 = await fetch(`https://1.1.1.1/dns-query?name=${域名}&type=A`, {
-    headers: { 'Accept': 'application/dns-json' }
-  });
-  const DNS数据 = await DNS响应.json();
-  const 解析记录 = DNS数据.Answer?.find(记录 => 记录.type === 1);
-  if (!解析记录) throw new Error('无法解析域名的IPv4地址');
-  return 转换到NAT64的IPv6(解析记录.data);
+  try {
+    const DNS响应 = await fetch(`https://1.1.1.1/dns-query?name=${域名}&type=A`, {
+      headers: {
+        'Accept': 'application/dns-json'
+      }
+    });
+    const DNS数据 = await DNS响应.json();
+    if (DNS数据.Answer && DNS数据.Answer.length > 0) {
+      const 解析记录 = DNS数据.Answer.find(记录 => 记录.type === 1);
+      if (解析记录) {
+        return 转换到NAT64的IPv6(解析记录.data);
+      }
+    }
+    throw new Error('无法解析域名的IPv4地址');
+  } catch (err) {
+    throw new Error(`DNS解析失败: ${err.message}`);
+  }
 }
 //////////////////////////////////////////////////////////////////////////订阅页面////////////////////////////////////////////////////////////////////////
 let 转码 = 'vl', 转码2 = 'ess', 符号 = '://', 小猫 = 'cla', 咪 = 'sh', 我的私钥;
