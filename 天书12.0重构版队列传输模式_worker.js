@@ -43,22 +43,19 @@ let 我的节点名字 = '天书12' //自己的节点名字【统一名称】
 
 let 启动控流机制 = false; //选择是否启动控流机制，true启动，false关闭，使用控流可提升连接稳定性，适合轻度使用，日常使用应该绰绰有余
 
-let DOH服务器列表 = [ //DOH地址，基本上已经涵盖市面上所有通用地址了，一般无需修改
-  "https://dns.google/dns-query",
-  "https://cloudflare-dns.com/dns-query",
-  "https://1.1.1.1/dns-query",
-  "https://dns.quad9.net/dns-query",
-  /* //过多的doh会造成多余的资源消耗，关闭掉一部分，需要的可自行启用
-  "https://doh.opendns.com/dns-query",
-  "https://dns.adguard.com/dns-query",
-  "https://doh.dns.yandex.net/dns-query",
-  "https://doh.libredns.gr/dns-query",
-  "https://doh-jp.blahdns.com/dns-query",
-  "https://doh-de.blahdns.com/dns-query",
-  //国内DOH
-  "https://doh.dnspod.cn/dns-query", 
-  "https://doh.114dns.com/dns-query",
-  */
+let DOH服务器列表 = [ // DOH地址，基本上已经涵盖市面上所有通用地址了，一般无需修改
+  // 国际通用
+  "https://1.1.1.1/dns-query",                // Cloudflare IP
+  "https://cloudflare-dns.com/dns-query",     // Cloudflare 主域名
+  "https://dns.google/resolve",               // Google 公共 DNS
+  "https://dns.adguard.com/resolve",          // AdGuard 去广告 DNS
+
+  // 国际新增推荐
+  "https://dns.nextdns.io/resolve",           // NextDNS
+
+  // 国内兼容
+  "https://dns.alidns.com/resolve",           // 阿里公共 DNS（223.5.5.5）
+  "https://doh.pub/dns-query",                // 腾讯公共 DNS（119.29.29.29）
 ];
 //////////////////////////////////////////////////////////////////////////网页入口////////////////////////////////////////////////////////////////////////
 export default {
@@ -218,7 +215,7 @@ async function 解析VL标头(二进制数据, WS接口, TCP接口) {
         } else {
           if (启用NAT64反代 && 识别地址类型 === 1) {
             const [NAT64地址, NAT64端口] = 解析地址端口(我的NAT64地址);
-            const 转换NAT64地址 = `[${NAT64地址}${访问地址.split('.').map(n => (+n).toString(16).padStart(2, '0')).join('').replace(/(.{4})/, '$1:')}]`;
+            const 转换NAT64地址 = 转换到NAT64的IPv6(访问地址, NAT64地址)
             TCP接口 = connect({ hostname: 转换NAT64地址, port: NAT64端口 });
           }
         }
@@ -274,6 +271,18 @@ function 解析地址端口(地址段) {
     [地址, 端口 = 443] = 地址段.split(':')
   }
   return [地址, 端口];
+}
+function 转换到NAT64的IPv6(IPv4地址, NAT64地址) {
+  const 地址段 = IPv4地址.split('.');
+  if (地址段.length !== 4) throw new Error('无效的IPv4地址');
+  const 十六进制段 = 地址段.map(part => {
+    const num = parseInt(part, 10);
+    if (num < 0 || num > 255) {
+      throw new Error('无效的IPv4地址段');
+    }
+    return num.toString(16).padStart(2, '0');
+  });
+  return `[${NAT64地址}${十六进制段[0]}${十六进制段[1]}:${十六进制段[2]}${十六进制段[3]}]`;
 }
 //第三步，创建客户端WS-CF-目标的传输通道并监听状态
 async function 建立传输管道(传输数据, 读取数据, WS接口, 传输队列 = Promise.resolve(), 字节计数 = 0, 累计传输字节数 = 0, 已结束 = false) {
