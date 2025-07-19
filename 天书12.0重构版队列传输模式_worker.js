@@ -200,7 +200,7 @@ async function 解析VL标头(二进制数据, WS接口, TCP接口) {
       default:
         throw new Error('无效的访问地址');
     }
-    if (启用反代功能 && 启用SOCKS5反代 && 启用SOCKS5全局反代) {
+    if (启用SOCKS5全局反代) {
       TCP接口 = await 创建SOCKS5接口(识别地址类型, 访问地址, 访问端口);
     } else {
       try {
