@@ -13,13 +13,12 @@ let 我的优选 = [
   '\u0077\u0077\u0077\u002e\u0069\u0070\u0067\u0065\u0074\u002e\u006e\u0065\u0074:2083',
   '\u006d\u0061\u006c\u0061\u0079\u0073\u0069\u0061\u002e\u0063\u006f\u006d:2087',
   '\u0063\u006c\u006f\u0075\u0064\u0066\u006c\u0061\u0072\u0065\u002e\u0039\u006a\u0079\u002e\u0063\u0063:2096'
-]; 
+];
 //格式127.0.0.1:443#US@notls或[2606:4700:3030:0:4563:5696:a36f:cdc5]:2096#US，如果#US不填则使用统一名称，如果@notls不填则默认使用TLS，每行一个，如果不填任何节点会生成一个默认自身域名的小黄云节点
 
 let 启用反代功能 = true; //选择是否启用反代功能【总开关】，false，true，现在你可以自由的选择是否启用反代功能了
 let 反代IP = 'ProxyIP.Vultr.CMLiussss.net'; //反代IP或域名，反代IP端口一般情况下不用填写，如果你非要用非标反代的话，可以填'ts.hpc.tw:443'这样
 const 我的节点名字 = '天书9.0'; //自己的节点名字【统一名称】
-
 let 伪装网页 = ''; //填入伪装网页，格式'www.youku.com'，建议用小站伪装，比较靠谱
 
 ///////////////网页入口/////////////
@@ -145,35 +144,19 @@ async function 解析VL标头(VL数据, WS接口) {
   建立传输管道(WS接口, TCP接口, 写入初始数据); //建立WS接口与TCP接口的传输管道
 }
 
-function 验证VL的密钥(arr, offset = 0) {
-  const uuid = [
-    转换密钥格式[arr[offset + 0]],
-    转换密钥格式[arr[offset + 1]],
-    转换密钥格式[arr[offset + 2]],
-    转换密钥格式[arr[offset + 3]],
-    "-",
-    转换密钥格式[arr[offset + 4]],
-    转换密钥格式[arr[offset + 5]],
-    "-",
-    转换密钥格式[arr[offset + 6]],
-    转换密钥格式[arr[offset + 7]],
-    "-",
-    转换密钥格式[arr[offset + 8]],
-    转换密钥格式[arr[offset + 9]],
-    "-",
-    转换密钥格式[arr[offset + 10]],
-    转换密钥格式[arr[offset + 11]],
-    转换密钥格式[arr[offset + 12]],
-    转换密钥格式[arr[offset + 13]],
-    转换密钥格式[arr[offset + 14]],
-    转换密钥格式[arr[offset + 15]]
-  ].join('').toLowerCase();
-  return uuid;
-}
-
-const 转换密钥格式 = [];
-for (let i = 0; i < 256; ++i) {
-  转换密钥格式.push((i + 256).toString(16).slice(1));
+function 验证VL的密钥(字节数组, 起始位置 = 0) {
+  const 十六进制表 = Array.from({ length: 256 }, (_, 值) =>
+    (值 + 256).toString(16).slice(1)
+  );
+  const 分段结构 = [4, 2, 2, 2, 6];
+  let 当前索引 = 起始位置;
+  const 格式化UUID = 分段结构
+    .map(段长度 =>
+      Array.from({ length: 段长度 }, () => 十六进制表[字节数组[当前索引++]]).join('')
+    )
+    .join('-')
+    .toLowerCase();
+  return 格式化UUID;
 }
 
 //第三步，创建客户端WS-CF-目标的传输通道并监听状态
