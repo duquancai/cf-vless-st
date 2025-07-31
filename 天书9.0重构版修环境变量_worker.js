@@ -3,8 +3,6 @@ import { connect } from 'cloudflare:sockets';
 ///////////////配置区块////////////////////////
 const 哎呀呀这是我的ID啊 = "123456"; //实际上这是你的订阅路径，支持任意大小写字母和数字，[域名/ID]进入订阅页面
 const 哎呀呀这是我的VL密钥 = "ae27a15c-cbcc-4dc6-bb51-5a90cc0a62a8"; //这是真实的UUID，通用订阅会进行验证，建议修改为自己的规范化UUID
-const 隐藏订阅 = false; //选择是否隐藏订阅页面，false不隐藏，true隐藏，当然隐藏后自己也无法订阅，因为配置固定，适合自己订阅后就隐藏，防止被爬订阅，并且可以到下方添加嘲讽语^_^
-const 嘲讽语 = "哎呀你找到了我，但是我就是不给你看，气不气，嘿嘿嘿"; //隐藏订阅后，真实的订阅页面就会显示这段话，想写啥写啥
 
 let 我的优选 = [
   '\u0075\u0073\u0061\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d',
@@ -27,40 +25,31 @@ export default {
     const 读取我的请求标头 = 访问请求.headers.get('Upgrade');
     const url = new URL(访问请求.url);
     if (!读取我的请求标头 || 读取我的请求标头 !== 'websocket') {
-      switch (url.pathname) {
-        case `/${哎呀呀这是我的ID啊}/${转码}${转码2}`: {
-          if (隐藏订阅) {
-            return new Response(`${嘲讽语}`, {
-              status: 200,
-              headers: { "Content-Type": "text/plain;charset=utf-8" }
-            });
-          } else {
-            const 通用配置文件 = 给我通用配置文件(访问请求.headers.get('Host'));
-            return new Response(`${通用配置文件}`, {
-              status: 200,
-              headers: { "Content-Type": "text/plain;charset=utf-8" }
-            });
-          }
-        }
-        default:
-          url.hostname = 伪装网页;
-          url.protocol = 'https:';
-          访问请求 = new Request(url, 访问请求);
-          return fetch(访问请求);
+      if (url.pathname === `/${哎呀呀这是我的ID啊}/${转码}${转码2}`) {
+        const 通用配置文件 = 给我通用配置文件(访问请求.headers.get('Host'));
+        return new Response(`${通用配置文件}`, {
+          status: 200,
+          headers: { "Content-Type": "text/plain;charset=utf-8" }
+        });
+      } else {
+        url.hostname = 伪装网页;
+        url.protocol = 'https:';
+        访问请求 = new Request(url, 访问请求);
+        return fetch(访问请求);
       }
     } else if (读取我的请求标头 === 'websocket') {
       const 读取环境变量 = (name, fallback, env) => {
         const raw = import.meta?.env?.[name] ?? env?.[name];
         if (raw === undefined || raw === null || raw === '') return fallback;
         if (typeof raw === 'string') {
-          const trimmed = raw.trim();
-          if (trimmed === 'true') return true;
-          if (trimmed === 'false') return false;
-          if (trimmed.includes('\n')) {
-            return trimmed.split('\n').map(item => item.trim()).filter(Boolean);
+          const trimed = raw.trim();
+          if (trimed === 'true') return true;
+          if (trimed === 'false') return false;
+          if (trimed.includes('\n')) {
+            return trimed.split('\n').map(item => item.trim()).filter(Boolean);
           }
-          if (!isNaN(trimmed) && trimmed !== '') return Number(trimmed);
-          return trimmed;
+          if (!isNaN(trimed) && trimed !== '') return Number(trimed);
+          return trimed;
         }
         return raw;
       };
