@@ -1,8 +1,8 @@
 import { connect } from "cloudflare:sockets";
 const mywoID = "123456";
 const WS_READY_STATE_OPEN = 1;
-let userID = "ef3dcc57-6689-48e4-b3f9-2a62d88c730a";
-let myyouxuan = [
+const userID = "ef3dcc57-6689-48e4-b3f9-2a62d88c730a";
+const myyouxuan = [
 	'\u0075\u0073\u0061\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d',
 	'\u006d\u0079\u0061\u006e\u006d\u0061\u0072\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d:8443',
 	'\u0077\u0077\u0077\u002e\u0073\u0068\u006f\u0070\u0069\u0066\u0079\u002e\u0063\u006f\u006d:2053',
@@ -10,14 +10,14 @@ let myyouxuan = [
 	'\u006d\u0061\u006c\u0061\u0079\u0073\u0069\u0061\u002e\u0063\u006f\u006d:2087',
 	'\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u0073\u006f\u0075\u0074\u0068\u0065\u0061\u0073\u0074\u0065\u0075\u0072\u006f\u0070\u0065\u002e\u0063\u006f\u006d:2096'
 ];
-let mypyIP = 'ProxyIP.Vultr.CMLiussss.net';
+const mypyIP = 'ProxyIP.Vultr.CMLiussss.net';
 
 export default {
 	async fetch(request) {
+		const upgradeHeader = request.headers.get("Upgrade");
+		const url = new URL(request.url);
 		try {
-			const upgradeHeader = request.headers.get("Upgrade");
 			if (!upgradeHeader || upgradeHeader !== "websocket") {
-				const url = new URL(request.url);
 				if (url.pathname === `/${mywoID}/${zhuanma}${zhuanma2}`) {
 					const tongyong = gettongyongconfig(request.headers.get('Host'));
 					return new Response(`${tongyong}`, {
@@ -125,15 +125,12 @@ function createWebSocketReadableStream(ws, earlyDataHeader) {
 			ws.addEventListener('message', event => {
 				controller.enqueue(event.data);
 			});
-
 			ws.addEventListener('close', () => {
 				controller.close();
 			});
-
 			ws.addEventListener('error', err => {
 				controller.error(err);
 			});
-
 			if (earlyDataHeader) {
 				try {
 					const decoded = atob(earlyDataHeader.replace(/-/g, '+').replace(/_/g, '/'));
