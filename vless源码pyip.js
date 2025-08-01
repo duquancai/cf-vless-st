@@ -46,13 +46,8 @@ async function handle\u0076\u006c\u0065\u0073\u0073WebSocket(request) {
 	const earlyDataHeader = request.headers.get('sec-websocket-protocol') || '';
 	const wsReadable = createWebSocketReadableStream(serverWS, earlyDataHeader);
 	let remoteSocket = null;
-	let udpStreamWrite = null;
-	let isDns = false;
 	wsReadable.pipeTo(new WritableStream({
 		async write(chunk) {
-			if (isDns && udpStreamWrite) {
-				return udpStreamWrite(chunk);
-			}
 			if (remoteSocket) {
 				const writer = remoteSocket.writable.getWriter();
 				await writer.write(chunk);
@@ -163,12 +158,9 @@ function parse\u0076\u006c\u0065\u0073\u0073Header(buffer, userID) {
 	}
 	const optionsLength = view.getUint8(17);
 	const command = view.getUint8(18 + optionsLength);
-	let isUDP = false;
 	if (command === 1) {
-	} else if (command === 2) {
-		isUDP = true;
 	} else {
-		return { hasError: true, message: '不支持的命令,仅支持TCP(01)和UDP(02)' };
+		return { hasError: true, message: '不支持的命令,仅支持TCP(01)' };
 	}
 	let offset = 19 + optionsLength;
 	const port = view.getUint16(offset);
@@ -202,7 +194,6 @@ function parse\u0076\u006c\u0065\u0073\u0073Header(buffer, userID) {
 		portRemote: port,
 		rawDataIndex: offset,
 		\u0076\u006c\u0065\u0073\u0073Version: version,
-		isUDP
 	};
 }
 
