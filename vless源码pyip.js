@@ -10,12 +10,13 @@ const myyouxuan = [
 	'\u006d\u0061\u006c\u0061\u0079\u0073\u0069\u0061\u002e\u0063\u006f\u006d:2087',
 	'\u0077\u0077\u0077\u002e\u0076\u0069\u0073\u0061\u0073\u006f\u0075\u0074\u0068\u0065\u0061\u0073\u0074\u0065\u0075\u0072\u006f\u0070\u0065\u002e\u0063\u006f\u006d:2096'
 ];
-const mypyIP = 'ProxyIP.Vultr.CMLiussss.net';
+const mypyIPz = 'ProxyIP.Vultr.CMLiussss.net';
 
 export default {
 	async fetch(request) {
 		const upgradeHeader = request.headers.get("Upgrade");
 		const url = new URL(request.url);
+
 		try {
 			if (!upgradeHeader || upgradeHeader !== "websocket") {
 				if (url.pathname === `/${mywoID}/${zhuanma}${zhuanma2}`) {
@@ -73,7 +74,10 @@ async function handle\u0076\u006c\u0065\u0073\u0073WebSocket(request) {
 			}
 			async function retry() {
 				try {
-					const proxyIP = mypyIP;
+					const urrl = new URL(request.url);
+					const tempurl = urrl.pathname + urrl.search;
+					const tmp_ip =tempurl.split("pyip=")[1];
+					const proxyIP = tmp_ip || mypyIPz;
 					const tcpSocket = await connect({
 						hostname: proxyIP,
 						port: result.portRemote
