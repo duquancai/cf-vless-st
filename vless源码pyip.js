@@ -1,8 +1,7 @@
 import { connect } from "cloudflare:sockets";
 const mywoID = "123456";
-const WS_READY_STATE_OPEN = 1;
 const userID = "ef3dcc57-6689-48e4-b3f9-2a62d88c730a";
-const myyouxuan = [
+let myyouxuan = [
 	'\u0075\u0073\u0061\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d',
 	'\u006d\u0079\u0061\u006e\u006d\u0061\u0072\u002e\u0076\u0069\u0073\u0061\u002e\u0063\u006f\u006d:8443',
 	'\u0077\u0077\u0077\u002e\u0073\u0068\u006f\u0070\u0069\u0066\u0079\u002e\u0063\u006f\u006d:2053',
@@ -32,7 +31,7 @@ export default {
 					return fetch(request);
 				}
 			}
-			return await handle\u0076\u006c\u0065\u0073\u0073WebSocket(request);
+			return await handle\u0076\u006c\u0065\u0073\u0073WebSocket(request, url);
 		} catch (err) {
 			let e = err;
 			return new Response(e.toString());
@@ -40,7 +39,7 @@ export default {
 	},
 };
 //WebSocket 写入数据流
-async function handle\u0076\u006c\u0065\u0073\u0073WebSocket(request) {
+async function handle\u0076\u006c\u0065\u0073\u0073WebSocket(request, url) {
 	const wsPair = new WebSocketPair();
 	const [clientWS, serverWS] = Object.values(wsPair);
 	serverWS.accept();
@@ -74,9 +73,8 @@ async function handle\u0076\u006c\u0065\u0073\u0073WebSocket(request) {
 			}
 			async function retry() {
 				try {
-					const urrl = new URL(request.url);
-					const tempurl = urrl.pathname + urrl.search;
-					const tmp_ip =tempurl.split("pyip=")[1];
+					const tempurl = url.pathname + url.search;
+					const tmp_ip = tempurl.split("pyip=")[1];
 					const proxyIP = tmp_ip || mypyIPz;
 					const tcpSocket = await connect({
 						hostname: proxyIP,
@@ -89,7 +87,7 @@ async function handle\u0076\u006c\u0065\u0073\u0073WebSocket(request) {
 					tcpSocket.closed.catch(error => {
 						console.error('连接关闭错误:', error);
 					}).finally(() => {
-						if (serverWS.readyState === WS_READY_STATE_OPEN) {
+						if (serverWS.readyState === 1) {
 							serverWS.close(1000, '连接已关闭');
 						}
 					});
@@ -204,7 +202,7 @@ function pipeRemoteToWebSocket(remoteSocket, ws, \u0076\u006c\u0065\u0073\u0073H
 	remoteSocket.readable.pipeTo(new WritableStream({
 		write(chunk) {
 			hasIncomingData = true;
-			if (ws.readyState === WS_READY_STATE_OPEN) {
+			if (ws.readyState === 1) {
 				if (!headerSent) {
 					const combined = new Uint8Array(\u0076\u006c\u0065\u0073\u0073Header.byteLength + chunk.byteLength);
 					combined.set(new Uint8Array(\u0076\u006c\u0065\u0073\u0073Header), 0);
@@ -221,7 +219,7 @@ function pipeRemoteToWebSocket(remoteSocket, ws, \u0076\u006c\u0065\u0073\u0073H
 				retry();
 				return;
 			}
-			if (ws.readyState === WS_READY_STATE_OPEN) {
+			if (ws.readyState === 1) {
 				ws.close(1000, '正常关闭');
 			}
 		},
@@ -231,7 +229,7 @@ function pipeRemoteToWebSocket(remoteSocket, ws, \u0076\u006c\u0065\u0073\u0073H
 	})).catch(err => {
 		console.error('数据转发错误:', err);
 		closeSocket(remoteSocket);
-		if (ws.readyState === WS_READY_STATE_OPEN) {
+		if (ws.readyState === 1) {
 			ws.close(1011, '数据传输错误');
 		}
 	});
