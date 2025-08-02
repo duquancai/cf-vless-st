@@ -38,7 +38,7 @@ export default {
 		}
 	},
 };
-//WebSocket 处理
+//WebSocket 写入数据流
 async function handle\u0076\u006c\u0065\u0073\u0073WebSocket(request) {
 	const wsPair = new WebSocketPair();
 	const [clientWS, serverWS] = Object.values(wsPair);
@@ -118,7 +118,7 @@ async function handle\u0076\u006c\u0065\u0073\u0073WebSocket(request) {
 		webSocket: clientWS,
 	});
 }
-
+//WebSocket 读取数据流
 function createWebSocketReadableStream(ws, earlyDataHeader) {
 	return new ReadableStream({
 		start(controller) {
@@ -142,7 +142,7 @@ function createWebSocketReadableStream(ws, earlyDataHeader) {
 		}
 	});
 }
-//VLESS 协议解析
+//VLESS 解析数据流
 function parse\u0076\u006c\u0065\u0073\u0073Header(buffer, userID) {
 	if (buffer.byteLength < 24) {
 		return { hasError: true, message: '无效的头部长度' };
@@ -193,7 +193,7 @@ function parse\u0076\u006c\u0065\u0073\u0073Header(buffer, userID) {
 		\u0076\u006c\u0065\u0073\u0073Version: version,
 	};
 }
-
+//send 发送数据流
 function pipeRemoteToWebSocket(remoteSocket, ws, \u0076\u006c\u0065\u0073\u0073Header, retry = null) {
 	let headerSent = false;
 	let hasIncomingData = false;
