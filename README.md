@@ -34,9 +34,11 @@ CF官方优选443系端口：443、2053、2083、2087、2096、8443
 2606:4700::0 需IPV6环境
 
 -------------------------------------------------------------
+### 纯手搓示意图（vless+ws+tls）<br>
+   ![这是图片](/image/手搓.png "vless")<br>
+------------------------------------------------------------- 
 
 ## 客户端推荐
- 
 目前支持该功能的平台客户端如下（点击名称即跳转到官方下载地址）
 
 1、安卓Android：[v2rayNG](https://github.com/2dust/v2rayNG/tags)、[Nekobox](https://github.com/starifly/NekoBoxForAndroid/releases)、[Karing](https://github.com/KaringX/karing/tags)、v2box
