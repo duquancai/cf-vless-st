@@ -28,7 +28,6 @@
 1. 安卓Android：[v2rayNG](https://github.com/2dust/v2rayNG/tags)、[Nekobox](https://github.com/starifly/NekoBoxForAndroid/releases)、[Karing](https://github.com/KaringX/karing/tags) <br>
 
 2. 电脑Windows：[v2rayN](https://github.com/2dust/v2rayN/tags)、[Hiddify](https://github.com/hiddify/hiddify-next/tags)、[Karing](https://github.com/KaringX/karing/tags)
-
-## Stargazers over Time
 -------------------------------------------------------------
-[![Stargazers over time](https://starchart.cc/MHSanaei/3x-ui.svg?variant=adaptive)](https://starchart.cc/MHSanaei/3x-ui)
+## Stargazers over Time
+[![Stargazers over time](https://starchart.cc/duquancai/cf-vless-st.svg?variant=adaptive)](https://starchart.cc/duquancai/cf-vless-st)
