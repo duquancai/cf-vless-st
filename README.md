@@ -10,6 +10,8 @@
 1. 支持workers部署：vless+ws+tls代理节点
 2. 支持pages部署：vless+ws+tls代理节点
 3. 支持snippets部署：vless+ws+tls代理节点
+### 纯手搓示意图（vless+ws+tls）<br>
+   ![这是图片](/image/手搓.png "vless")<br>
  -------------------------------------------------------------
 ### 优选IP的运用
 1. CF官方优选80系端口：80、8080、8880、2052、2082、2086、2095
@@ -21,9 +23,6 @@
  (3)  162.159.0.0 <br>
  (4)  2606:4700::0 需IPV6环境
  -------------------------------------------------------------
-### 纯手搓示意图（vless+ws+tls）<br>
-   ![这是图片](/image/手搓.png "vless")<br>
- ------------------------------------------------------------- 
 ### 客户端推荐
 #### 点击名称即跳转到官方下载地址
 1. 安卓Android：[v2rayNG](https://github.com/2dust/v2rayNG/tags)、[Nekobox](https://github.com/starifly/NekoBoxForAndroid/releases)、[Karing](https://github.com/KaringX/karing/tags) <br>
