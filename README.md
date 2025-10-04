@@ -10,7 +10,7 @@
 1. 支持workers部署：vless+ws+tls代理节点
 2. 支持pages部署：vless+ws+tls代理节点
 3. 支持snippets部署：vless+ws+tls代理节点
-### 纯手搓示意图（vless+ws+tls）<br>
+4. 纯手搓示意图（vless+ws+tls）<br>
    ![这是图片](/image/手搓.png "vless")<br>
  -------------------------------------------------------------
 ### 优选IP的运用
