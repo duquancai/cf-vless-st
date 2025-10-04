@@ -23,7 +23,7 @@ export default {
       const [client, server] = Object.values(new WebSocketPair());
       server.accept();
       server.send(new Uint8Array([0, 0]));
-      await startTransferPipeline(server, new URL(request.url));
+      startTransferPipeline(server, new URL(request.url)).catch(e => console.error('pipeline error', e));
       return new Response(null, { status: 101, webSocket: client });
     } else {
       return new Response('Hello World!', { status: 200 });
