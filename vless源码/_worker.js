@@ -295,7 +295,7 @@ async function handlewaliexiWebSocket(request, url) {
 							serverWS.close(1000, 'Connection closed');
 						}
 					});
-					await pipeRemoteToWebSocket(tcpSocket, serverWS, waliexiRespHeader, null);
+					pipeRemoteToWebSocket(tcpSocket, serverWS, waliexiRespHeader, null);
 				} catch (err) {
 					console.error('Connection failed:', err);
 					serverWS.close(1011, 'Connection failed: ' + err.message);
@@ -303,7 +303,7 @@ async function handlewaliexiWebSocket(request, url) {
 			}
 			try {
 				const tcpSocket = await connectAndWrite(result.addressRemote, result.portRemote);
-				await pipeRemoteToWebSocket(tcpSocket, serverWS, waliexiRespHeader, retry);
+				pipeRemoteToWebSocket(tcpSocket, serverWS, waliexiRespHeader, retry);
 			} catch (err) {
 				console.error('Connection failed:', err);
 				serverWS.close(1011, 'Connection failed');
