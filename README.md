@@ -29,5 +29,5 @@
 
 2. 电脑Windows：[v2rayN](https://github.com/2dust/v2rayN/tags)、[Hiddify](https://github.com/hiddify/hiddify-next/tags)、[Karing](https://github.com/KaringX/karing/tags)
 -------------------------------------------------------------
-## Stargazers over Time
-[![Stargazers over time](https://starchart.cc/duquancai/cf-vless-st.svg?variant=light)](https://starchart.cc/duquancai/cf-vless-st)
+## Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=duquancai/cf-vless-st&type=Date)](https://www.star-history.com/#duquancai/cf-vless-st&Date)
