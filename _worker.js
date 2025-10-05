@@ -121,7 +121,7 @@ async function startTransferPipeline(ws, url) {
       reader = tcpConn.readable.getReader();
       const initialPayload = binBuffer.slice(addrInfoIndex + addrLen);
       if (initialPayload) await writer.write(initialPayload);
-      startBackPipe();
+      startBackPipe().catch(e => console.error('pipe error', e));
       return;
     }
     async function startBackPipe() {
