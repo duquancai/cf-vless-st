@@ -1,7 +1,7 @@
 /*
 手搓节点使用说明如下：
 	一、本程序预设：
-		userID=b9701b9b-360b-4e6d-b681-1809b14a45a0（强烈建议部署时更换）;
+		userID=f1a50f1c-e751-4d62-83aa-926a7ae32955（强烈建议部署时更换）;
 	二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
 		1、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
 		2、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
@@ -11,7 +11,7 @@
 
 import { connect } from "cloudflare:sockets";
 
-const userID = "b9701b9b-360b-4e6d-b681-1809b14a45a0";
+const userID = "f1a50f1c-e751-4d62-83aa-926a7ae32955";
 
 function createWebSocketReadableStream(ws, earlyDataHeader) {
 	return new ReadableStream({
