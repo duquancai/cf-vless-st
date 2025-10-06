@@ -6,7 +6,7 @@
 		1、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
 		2、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
 		两种任选其一，如果不设置留空，cf相关的网站无法访问;
-	注意：workers、pages、snippets都可以部署，部署完后手搓443系6个端口节点veless+ws+tls
+	注意：workers、pages、snippets都可以部署，部署完后手搓443系6个端口节点vless+ws+tls
 */
 
 import { connect } from "cloudflare:sockets";
