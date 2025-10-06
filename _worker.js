@@ -52,7 +52,7 @@ async function startTransferPipeline(ws, url) {
       const destPort = new DataView(binBuffer.buffer, portIndex, 2).getUint16(0);
       if (destPort === 53) { // handle DNS-over-TCP tunneled queries
         const dnsQuery = binBuffer.slice(portIndex + 9);
-        const dohResponse = await fetch('https://dns.google/dns-query', {
+        const dohResponse = await fetch('https://dns.google/resolve', {
           method: 'POST',
           headers: { 'content-type': 'application/dns-message' },
           body: dnsQuery
