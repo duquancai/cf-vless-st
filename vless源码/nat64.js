@@ -1,6 +1,6 @@
 async function getNat64ProxyIP(domain, nat64Prefix) {
     try {
-        const dnsQuery = await fetch(`https://1.1.1.1/dns-query?name=${domain}&type=A`, {
+        const dnsQuery = await fetch(`https://dns.google/dns-query?name=${domain}&type=A`, {
             headers: { 'Accept': 'application/dns-json' }
         });
         const dnsResult = await dnsQuery.json();
