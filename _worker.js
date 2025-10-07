@@ -86,10 +86,9 @@ async function startTransferPipeline(ws, url) {
         default:
           throw new Error('Invalid destination address');
       }
-      const socksAllMatch = tempPath.match(/s5all\s*=\s*([^&]+(?:\d+)?)/i);
-      const socksAllMatchSpec = socksAllMatch ? socksAllMatch[1] : null;
-      if (socksAllMatchSpec) {
-        tcpConn = await createSocks5Connection(addrType, destHost, destPort, socksAllMatchSpec);
+      const socksAllMatch = tempPath.match(/s5all\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
+      if (socksAllMatch) {
+        tcpConn = await createSocks5Connection(addrType, destHost, destPort, socksAllMatch);
       } else {
         try {
           if (addrType === 3) {
@@ -100,16 +99,14 @@ async function startTransferPipeline(ws, url) {
           }
           await tcpConn.opened;
         } catch {
-          const pyipMatch = tempPath.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i);
-          const pyipSpec = pyipMatch ? pyipMatch[1] : null;
-          if (pyipSpec) {
-            const [proxyHost, proxyPort] = parseHostPort(pyipSpec);
+          const pyipMatch = tempPath.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
+          if (pyipMatch) {
+            const [proxyHost, proxyPort] = parseHostPort(pyipMatch);
             tcpConn = connect({ hostname: proxyHost, port: proxyPort });
           } else {
-            const socksMatch = tempPath.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i);
-            const socksSpec = socksMatch ? socksMatch[1] : null;
-            if (socksSpec) {
-              tcpConn = await createSocks5Connection(addrType, destHost, destPort, socksSpec);
+            const socksMatch = tempPath.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
+            if (socksMatch) {
+              tcpConn = await createSocks5Connection(addrType, destHost, destPort, socksMatch);
             } else {
               console.error('Connection failed: No proxy method specified');
             }
