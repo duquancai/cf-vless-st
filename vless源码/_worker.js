@@ -266,16 +266,14 @@ async function handlewaliexiWebSocket(request, url) {
 			async function retry() {
 				try {
 					let tcpSocket;
-					const enableSocks = tempurl.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i);
-					const enableSock = enableSocks ? enableSocks[1] : null;
-					if (enableSock) {
-						const Socksip = socks5AddressParser(enableSock);
+					const enableSocks = tempurl.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
+					if (enableSocks) {
+						const Socksip = socks5AddressParser(enableSocks);
 						tcpSocket = await socks5Connect(result.addressType, result.addressRemote, result.portRemote, Socksip);
 					} else {
-						const tmp_ips = tempurl.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i);
-						const tmp_ip = tmp_ips ? tmp_ips[1] : null;
-						if (tmp_ip) {
-							const [latterip, formerport] = tmp_ip.split(/:?(\d{0,5})$/);
+						const tmp_ips = tempurl.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
+						if (tmp_ips) {
+							const [latterip, formerport] = tmp_ips.split(/:?(\d{0,5})$/);
 							tcpSocket = await connect({
 								hostname: latterip,
 								port: Number(formerport) || result.portRemote
