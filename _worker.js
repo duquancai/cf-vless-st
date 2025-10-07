@@ -224,7 +224,7 @@ function parseHostPort(hostSeg) {
     [ipv6, port = 443] = hostSeg.split(']:');
     host = ipv6.endsWith(']') ? `${ipv6}` : `${ipv6}]`;
   } else {
-    [host, port = 443] = hostSeg.split(':');
+    [host, port = 443] = hostSeg.split(/[:,;]/);
   }
   return [host, Number(port)];
 }
