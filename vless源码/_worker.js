@@ -1,14 +1,14 @@
 /*
-手搓节点使用说明如下：
+纯手搓节点使用说明如下：
 	一、本程序预设：
 		userID=f1a50f1c-e751-4d62-83aa-926a7ae32955（强烈建议部署时更换）;
 	二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
 		1、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
 		2、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
-		两种任选其一，如果不设置留空，cf相关的网站无法访问;
+		3、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
+		三种任选其一，如果不设置留空，cf相关的网站无法访问;
 	注意：workers、pages、snippets都可以部署，部署完后手搓443系6个端口节点vless+ws+tls
 */
-
 import { connect } from "cloudflare:sockets";
 
 const userID = "f1a50f1c-e751-4d62-83aa-926a7ae32955";
@@ -98,6 +98,60 @@ function parsewaliexiHeader(buffer, userID) {
 		rawDataIndex: offset,
 		waliexiVersion: version,
 	};
+}
+
+async function getNat64ProxyIP(remoteAddress, nat64Prefix) {
+	let parts
+	nat64Prefix = nat64Prefix.slice(1, -1);
+	if (/^\d+\.\d+\.\d+\.\d+$/.test(remoteAddress)) {
+		parts = remoteAddress.split('.');
+	} else if (remoteAddress.includes(':')) {
+		return remoteAddress;
+	} else {
+		const dnsQuery = await fetch(`https://1.1.1.1/dns-query?name=${remoteAddress}&type=A`, {
+			headers: { 'Accept': 'application/dns-json' }
+		});
+		const dnsResult = await dnsQuery.json();
+		const aRecord = dnsResult.Answer.find(record => record.type === 1);
+		if (!aRecord) return;
+		parts = aRecord.data.split('.');
+	}
+	const hex = parts.map(part => {
+		const num = parseInt(part, 10);
+		return num.toString(16).padStart(2, '0');
+	});
+	return `[${nat64Prefix}${hex[0]}${hex[1]}:${hex[2]}${hex[3]}]`;
+}
+
+async function parseHostPort(hostSeg) {
+	let host, ipv6, port;
+	if (/\.william/i.test(hostSeg)) {
+		const williamResult = await (async function (william) {
+			try {
+				const response = await fetch(`https://1.1.1.1/dns-query?name=${william}&type=TXT`, { headers: { 'Accept': 'application/dns-json' } });
+				if (!response.ok) return null;
+				const data = await response.json();
+				const txtRecords = (data.Answer || []).filter(record => record.type === 16).map(record => record.data);
+				if (txtRecords.length === 0) return null;
+				let txtData = txtRecords[0];
+				if (txtData.startsWith('"') && txtData.endsWith('"')) txtData = txtData.slice(1, -1);
+				const prefixes = txtData.replace(/\\010/g, ',').replace(/\n/g, ',').split(',').map(s => s.trim()).filter(Boolean);
+				if (prefixes.length === 0) return null;
+				return prefixes[Math.floor(Math.random() * prefixes.length)];
+			} catch (error) {
+				console.error('Failed to resolve ProxyIP:', error);
+				return null;
+			}
+		})(hostSeg);
+		hostSeg = williamResult || hostSeg;
+	}
+	if (hostSeg.startsWith('[') && hostSeg.includes(']')) {
+		[ipv6, port = 443] = hostSeg.split(']:');
+		host = ipv6.endsWith(']') ? `${ipv6}` : `${ipv6}]`;
+	} else {
+		[host, port = 443] = hostSeg.split(/[:,;]/);
+	}
+	return [host, Number(port)];
 }
 
 function closeSocket(socket) {
@@ -267,13 +321,21 @@ async function handlewaliexiWebSocket(request, url) {
 				try {
 					let tcpSocket;
 					const enableSocks = tempurl.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
+					const nat64Prefix = tempurl.match(/nat64pf\s*=\s*([^&]+)/i)?.[1];
 					if (enableSocks) {
 						const Socksip = socks5AddressParser(enableSocks);
 						tcpSocket = await socks5Connect(result.addressType, result.addressRemote, result.portRemote, Socksip);
+					} else if (nat64Prefix) {
+						const nat64Address = await getNat64ProxyIP(result.addressRemote, nat64Prefix);
+						if (nat64Address) {
+							tcpSocket = await connect({hostname: nat64Address, port: result.portRemote});
+						} else {
+							throw new Error('Failed to resolve NAT64 address');
+						}
 					} else {
 						const tmp_ips = tempurl.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
 						if (tmp_ips) {
-							const [latterip, formerport] = tmp_ips.split(/:?(\d{0,5})$/);
+							const [latterip, formerport] = await parseHostPort(tmp_ips);
 							tcpSocket = await connect({
 								hostname: latterip,
 								port: Number(formerport) || result.portRemote
