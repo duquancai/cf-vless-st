@@ -1,16 +1,17 @@
 /*
-天书13（修改）手搓节点使用说明如下：
+纯手搓节点使用说明如下：
   一、本程序预设：
-    1、USER_KEY=ef3dcc57-6689-48e4-b3f9-2a62d88c730a（强烈建议部署时更换）;
-    2、ENABLE_FLOW_CONTROL=false（预设关闭,根据使用情况选择开启或关闭）;
+    1、USER_KEY=ef3dcc57-6689-48e4-b3f9-2a62d88c730a（强烈建议部署时更换）
+    2、ENABLE_FLOW_CONTROL=false（预设关闭,根据使用情况选择开启或关闭）
       开启使用控流可降低CPU超时的概率，提升连接稳定性，适合轻度使用，日常使用应该绰绰有余
     3、FLOW_CHUNK_SIZE = 64; 单位字节，相当于分片大小
   二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
     1、socks5代理所有网站,格式：s5all=xxx
     2、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
     3、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
-    三种任选其一，如果不设置留空，cf相关的网站无法访问;
-  注意：workers、pages、snippets都可以部署，手搓443系6个端口节点vless+ws+tls
+    4、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
+    四种任选其一，如果不设置留空，cf相关的网站无法访问
+  注意：workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
 */
 import { connect } from 'cloudflare:sockets';
 const USER_KEY = 'ef3dcc57-6689-48e4-b3f9-2a62d88c730a';
@@ -100,9 +101,13 @@ async function startTransferPipeline(ws, url) {
           await tcpConn.opened;
         } catch {
           const pyipMatch = tempPath.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
+          const nat64Match = tempPath.match(/nat64pf\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
           if (pyipMatch) {
             const [proxyHost, proxyPort] = await parseHostPort(pyipMatch);
             tcpConn = connect({ hostname: proxyHost, port: proxyPort });
+          } else if (nat64Match) {
+            const nat64IP = await getNat64ProxyIP(destHost, nat64Match);
+            tcpConn = connect({ hostname: nat64IP, port: destPort });
           } else {
             const socksMatch = tempPath.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
             if (socksMatch) {
@@ -216,6 +221,29 @@ async function getSocks5Account(spec) {
   if (!password) { password = '' };
   const [host, port] = await parseHostPort(former);
   return { username, password, host, port };
+}
+
+async function getNat64ProxyIP(remoteAddress, nat64Prefix) {
+  let parts
+  nat64Prefix = nat64Prefix.slice(1, -1);
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(remoteAddress)) {
+    parts = remoteAddress.split('.');
+  } else if (remoteAddress.includes(':')) {
+    return remoteAddress;
+  } else {
+    const dnsQuery = await fetch(`https://1.1.1.1/dns-query?name=${remoteAddress}&type=A`, {
+      headers: { 'Accept': 'application/dns-json' }
+    });
+    const dnsResult = await dnsQuery.json();
+    const aRecord = dnsResult.Answer.find(record => record.type === 1);
+    if (!aRecord) return;
+    parts = aRecord.data.split('.');
+  }
+  const hex = parts.map(part => {
+    const num = parseInt(part, 10);
+    return num.toString(16).padStart(2, '0');
+  });
+  return `[${nat64Prefix}${hex[0]}${hex[1]}:${hex[2]}${hex[3]}]`;
 }
 
 async function parseHostPort(hostSeg) {
