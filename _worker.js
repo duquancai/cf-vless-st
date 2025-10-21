@@ -101,7 +101,7 @@ async function startTransferPipeline(ws, url) {
         } catch {
           const pyipMatch = tempPath.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
           if (pyipMatch) {
-            const [proxyHost, proxyPort] = parseHostPort(pyipMatch);
+            const [proxyHost, proxyPort] = await parseHostPort(pyipMatch);
             tcpConn = connect({ hostname: proxyHost, port: proxyPort });
           } else {
             const socksMatch = tempPath.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
@@ -147,7 +147,7 @@ async function startTransferPipeline(ws, url) {
 async function createSocks5Connection(addrType, destHost, destPort, socks5Spec) {
   let socks5Conn, convertedHost, writer, reader;
   try {
-    const { username, password, host, port } = getSocks5Account(socks5Spec);
+    const { username, password, host, port } = await getSocks5Account(socks5Spec);
     socks5Conn = connect({ hostname: host, port: port });
     await socks5Conn.opened;
     writer = socks5Conn.writable.getWriter();
@@ -210,16 +210,36 @@ async function createSocks5Connection(addrType, destHost, destPort, socks5Spec) 
   throw new Error(`SOCKS5 account failed`);
 }
 
-function getSocks5Account(spec) {
+async function getSocks5Account(spec) {
   const [latter, former] = spec.split(/@?([\d\[\]a-z.:]+(?::\d+)?)$/i);
   let [username, password] = latter.split(':');
   if (!password) { password = '' };
-  const [host, port] = parseHostPort(former);
+  const [host, port] = await parseHostPort(former);
   return { username, password, host, port };
 }
 
-function parseHostPort(hostSeg) {
+async function parseHostPort(hostSeg) {
   let host, ipv6, port;
+  if (hostSeg.includes('.william')) {
+    const williamResult = await (async function (william) {
+      try {
+        const response = await fetch(`https://1.1.1.1/dns-query?name=${william}&type=TXT`, { headers: { 'Accept': 'application/dns-json' } });
+        if (!response.ok) return null;
+        const data = await response.json();
+        const txtRecords = (data.Answer || []).filter(record => record.type === 16).map(record => record.data);
+        if (txtRecords.length === 0) return null;
+        let txtData = txtRecords[0];
+        if (txtData.startsWith('"') && txtData.endsWith('"')) txtData = txtData.slice(1, -1);
+        const prefixes = txtData.replace(/\\010/g, ',').replace(/\n/g, ',').split(',').map(s => s.trim()).filter(Boolean);
+        if (prefixes.length === 0) return null;
+        return prefixes[Math.floor(Math.random() * prefixes.length)];
+      } catch (error) {
+        console.error('Failed to resolve ProxyIP:', error);
+        return null;
+      }
+    })(hostSeg);
+    hostSeg = williamResult || hostSeg;
+  }
   if (hostSeg.startsWith('[') && hostSeg.includes(']')) {
     [ipv6, port = 443] = hostSeg.split(']:');
     host = ipv6.endsWith(']') ? `${ipv6}` : `${ipv6}]`;
