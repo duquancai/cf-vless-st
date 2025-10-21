@@ -220,7 +220,7 @@ async function getSocks5Account(spec) {
 
 async function parseHostPort(hostSeg) {
   let host, ipv6, port;
-  if (hostSeg.includes('.william')) {
+  if (/\.william/i.test(hostSeg)) {
     const williamResult = await (async function (william) {
       try {
         const response = await fetch(`https://1.1.1.1/dns-query?name=${william}&type=TXT`, { headers: { 'Accept': 'application/dns-json' } });
