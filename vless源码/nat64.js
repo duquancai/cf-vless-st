@@ -6,7 +6,7 @@ async function getNat64ProxyIP(remoteAddress, nat64Prefix) {
   } else if (remoteAddress.includes(':')) {
     return remoteAddress;
   } else {
-    const dnsQuery = await fetch(`https://1.1.1.1/dns-query?name=${remoteAddress}&type=A`, {
+    const dnsQuery = await fetch(`https://doh.090227.xyz/CMLiussss?name=${remoteAddress}&type=A`, {
       headers: { 'Accept': 'application/dns-json' }
     });
     const dnsResult = await dnsQuery.json();
@@ -21,14 +21,15 @@ async function getNat64ProxyIP(remoteAddress, nat64Prefix) {
   return `[${nat64Prefix}${hex[0]}${hex[1]}:${hex[2]}${hex[3]}]`;
 }
 // Example usage:
-const res = await getNat64ProxyIP('104.16.0.0', '[2602:fc59:b0:64::]');
-console.log(res);
+const res = await getNat64ProxyIP('ip.sb', '[2602:fc59:b0:64::]');
+console.log(res, "类型:", typeof res);
 
-async function 解析地址端口(proxyIP) {
-  if (proxyIP.includes('.william')) {
+async function parseHostPort(hostSeg) {
+  let host, ipv6, port;
+  if (/\.william/i.test(hostSeg)) {
     const williamResult = await (async function (william) {
       try {
-        const response = await fetch(`https://1.1.1.1/dns-query?name=${william}&type=TXT`, { headers: { 'Accept': 'application/dns-json' } });
+        const response = await fetch(`https://doh.pub/dns-query?name=${william}&type=TXT`, { headers: { 'Accept': 'application/dns-json' } });
         if (!response.ok) return null;
         const data = await response.json();
         const txtRecords = (data.Answer || []).filter(record => record.type === 16).map(record => record.data);
@@ -39,11 +40,19 @@ async function 解析地址端口(proxyIP) {
         if (prefixes.length === 0) return null;
         return prefixes[Math.floor(Math.random() * prefixes.length)];
       } catch (error) {
-        console.error('解析ProxyIP失败:', error);
+        console.error('Failed to resolve ProxyIP:', error);
         return null;
       }
-    })(proxyIP);
-    proxyIP = williamResult;
+    })(hostSeg);
+    hostSeg = williamResult || hostSeg;
   }
-  return proxyIP;
+  if (hostSeg.startsWith('[') && hostSeg.includes(']')) {
+    [ipv6, port = 443] = hostSeg.split(']:');
+    host = ipv6.endsWith(']') ? `${ipv6}` : `${ipv6}]`;
+  } else {
+    [host, port = 443] = hostSeg.split(/[:,;]/);
+  }
+  return [host, Number(port)];
 }
+const result = await parseHostPort('kr.william.ccwu.cc');
+console.log(result, "类型:", typeof result);
