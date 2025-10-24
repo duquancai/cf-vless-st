@@ -160,7 +160,11 @@ function closeSocket(socket) {
 }
 
 async function socks5Connect(addressType, addressRemote, portRemote, parsedSocks5Addr) {
-	const { username, password, hostname, port } = parsedSocks5Addr;
+	const [latter, former] = parsedSocks5Addr.split(/@?([\d\[\]a-z.:]+(?::\d+)?)$/i);
+	let [username, password] = latter.split(':');
+	if (!password) { password = '' };
+	let [hostname, port] = former.split(/:((?:\d+)?)$/i);
+	if (!port) { port = '443' };
 	const socket = connect({
 		hostname,
 		port,
@@ -236,15 +240,6 @@ async function socks5Connect(addressType, addressRemote, portRemote, parsedSocks
 	return socket;
 }
 
-function socks5AddressParser(address) {
-	const [latter, former] = address.split(/@?([\d\[\]a-z.:]+(?::\d+)?)$/i);
-	let [username, password] = latter.split(':');
-	if (!password) { password = '' };
-	let [hostname, port] = former.split(/:((?:\d+)?)$/i);
-	if (!port) { port = '443' };
-	return { username, password, hostname, port };
-}
-
 async function pipeRemoteToWebSocket(remoteSocket, ws, waliexiHeader, retry = null) {
 	let headerSent = false;
 	let hasIncomingData = false;
@@ -310,8 +305,7 @@ async function handlewaliexiWebSocket(request, url) {
 				let tcpSocket;
 				const enableSocksAll = tempurl.match(/s5all\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
 				if (enableSocksAll) {
-					const parsedSocks5Addr = socks5AddressParser(enableSocksAll);
-					tcpSocket = await socks5Connect(result.addressType, result.addressRemote, result.portRemote, parsedSocks5Addr);
+					tcpSocket = await socks5Connect(result.addressType, result.addressRemote, result.portRemote, enableSocksAll);
 				} else {
 					tcpSocket = connect({
 						hostname: address,
@@ -330,8 +324,7 @@ async function handlewaliexiWebSocket(request, url) {
 					const enableSocks = tempurl.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
 					const nat64Prefix = tempurl.match(/nat64pf\s*=\s*([^&]+)/i)?.[1];
 					if (enableSocks) {
-						const Socksip = socks5AddressParser(enableSocks);
-						tcpSocket = await socks5Connect(result.addressType, result.addressRemote, result.portRemote, Socksip);
+						tcpSocket = await socks5Connect(result.addressType, result.addressRemote, result.portRemote, enableSocks);
 					} else if (nat64Prefix) {
 						const nat64Address = await getNat64ProxyIP(result.addressRemote, nat64Prefix);
 						if (nat64Address) {
