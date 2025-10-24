@@ -3,11 +3,12 @@
 	一、本程序预设：
 		userID=f1a50f1c-e751-4d62-83aa-926a7ae32955（强烈建议部署时更换）;
 	二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
-		1、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
-		2、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
-		3、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
-		三种任选其一，如果不设置留空，cf相关的网站无法访问;
-	注意：workers、pages、snippets都可以部署，部署完后手搓443系6个端口节点vless+ws+tls
+		1、socks5代理所有网站,格式：s5all=xxx
+		2、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
+		3、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
+		4、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
+		四种任选其一，如果不设置留空，cf相关的网站无法访问
+	注意：workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
 */
 import { connect } from "cloudflare:sockets";
 
@@ -307,10 +308,16 @@ async function handlewaliexiWebSocket(request, url) {
 			const rawClientData = chunk.slice(result.rawDataIndex);
 			async function connectAndWrite(address, port) {
 				let tcpSocket;
-				tcpSocket = connect({
-					hostname: address,
-					port: port,
-				});
+				const enableSocksAll = tempurl.match(/s5all\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
+				if (enableSocksAll) {
+					const parsedSocks5Addr = socks5AddressParser(enableSocksAll);
+					tcpSocket = await socks5Connect(result.addressType, result.addressRemote, result.portRemote, parsedSocks5Addr);
+				} else {
+					tcpSocket = connect({
+						hostname: address,
+						port: port,
+					});
+				}
 				remoteSocket = tcpSocket;
 				const writer = tcpSocket.writable.getWriter();
 				await writer.write(rawClientData);
@@ -328,7 +335,7 @@ async function handlewaliexiWebSocket(request, url) {
 					} else if (nat64Prefix) {
 						const nat64Address = await getNat64ProxyIP(result.addressRemote, nat64Prefix);
 						if (nat64Address) {
-							tcpSocket = await connect({hostname: nat64Address, port: result.portRemote});
+							tcpSocket = await connect({ hostname: nat64Address, port: result.portRemote });
 						} else {
 							throw new Error('Failed to resolve NAT64 address');
 						}
