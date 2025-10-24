@@ -152,7 +152,10 @@ async function startTransferPipeline(ws, url) {
 async function createSocks5Connection(addrType, destHost, destPort, socks5Spec) {
   let socks5Conn, convertedHost, writer, reader;
   try {
-    const { username, password, host, port } = await getSocks5Account(socks5Spec);
+    const [latter, former] = socks5Spec.split(/@?([\d\[\]a-z.:]+(?::\d+)?)$/i);
+    let [username, password] = latter.split(':');
+    if (!password) { password = '' };
+    const [host, port] = await parseHostPort(former);
     socks5Conn = connect({ hostname: host, port: port });
     await socks5Conn.opened;
     writer = socks5Conn.writable.getWriter();
@@ -213,14 +216,6 @@ async function createSocks5Connection(addrType, destHost, destPort, socks5Spec) 
   reader?.releaseLock();
   await socks5Conn?.close();
   throw new Error(`SOCKS5 account failed`);
-}
-
-async function getSocks5Account(spec) {
-  const [latter, former] = spec.split(/@?([\d\[\]a-z.:]+(?::\d+)?)$/i);
-  let [username, password] = latter.split(':');
-  if (!password) { password = '' };
-  const [host, port] = await parseHostPort(former);
-  return { username, password, host, port };
 }
 
 async function getNat64ProxyIP(remoteAddress, nat64Prefix) {
