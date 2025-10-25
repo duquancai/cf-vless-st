@@ -81,8 +81,8 @@ async function startTransferPipeline(ws, url) {
           addrLen = 16;
           const ipv6 = [];
           const readIPv6 = new DataView(binBuffer.buffer, addrInfoIndex, 16);
-          for (let i = 0; i < 8; i++) ipv6.push(readIPv6.getUint16(i * 2).toString(16));
-          destHost = ipv6.join(':');
+          for (let i = 0; i < 8; i++) ipv6.push(readIPv6.getUint16(i * 2).toString(16).padStart(4, '0'));
+          destHost = ipv6.join(':').replace(/(^|:)0+(\w)/g, '$1$2');
           break;
         default:
           throw new Error('Invalid destination address');
@@ -92,12 +92,7 @@ async function startTransferPipeline(ws, url) {
         tcpConn = await createSocks5Connection(addrType, destHost, destPort, socksAllMatch);
       } else {
         try {
-          if (addrType === 3) {
-            const ipv6Host = `[${destHost}]`;
-            tcpConn = connect({ hostname: ipv6Host, port: destPort });
-          } else {
-            tcpConn = connect({ hostname: destHost, port: destPort });
-          }
+          tcpConn = connect({ hostname: addrType === 3 ? `[${destHost}]` : destHost, port: destPort });
           await tcpConn.opened;
         } catch {
           const pyipMatch = tempPath.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
@@ -183,22 +178,13 @@ async function createSocks5Connection(addrType, destHost, destPort, socks5Spec) 
         convertedHost = new Uint8Array([3, destHost.length, ...encoder.encode(destHost)]);
         break;
       case 3:
-        convertedHost = toSocks5IPv6(destHost);
-        function toSocks5IPv6(original) {
-          const trim = original.startsWith('[') && original.endsWith(']') ? original.slice(1, -1) : original;
-          const parts = trim.split('::');
-          const prefix = parts[0] ? parts[0].split(':').filter(Boolean) : [];
-          const suffix = parts[1] ? parts[1].split(':').filter(Boolean) : [];
-          const fillCount = 8 - (prefix.length + suffix.length);
-          if (fillCount < 0) throw new Error('invalid ipv6');
-          const full = [...prefix, ...Array(fillCount).fill('0'), ...suffix];
-          const bytes = full.flatMap(field => {
-            const val = parseInt(field || '0', 16);
-            return [(val >> 8) & 0xff, val & 0xff];
-          });
-          return new Uint8Array([0x04, ...bytes]);
-        }
+        convertedHost = new Uint8Array(
+          [4, ...destHost.split(':').flatMap(x => [parseInt(x.slice(0, 2), 16), parseInt(x.slice(2), 16)])]
+        );
         break;
+      default:
+        console.log(`invalid addressType is ${addrType}`);
+        return;
     }
     const buildReq = new Uint8Array([5, 1, 0, ...convertedHost, destPort >> 8, destPort & 0xff]);
     await writer.write(buildReq);

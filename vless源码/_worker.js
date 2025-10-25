@@ -305,7 +305,7 @@ async function handlewaliexiWebSocket(request, url) {
 				let tcpSocket;
 				const enableSocksAll = tempurl.match(/s5all\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
 				tcpSocket = enableSocksAll ? await socks5Connect(result.addressType, result.addressRemote, result.portRemote, enableSocksAll)
-					: connect({ hostname: address, port: port });
+					: connect({ hostname: result.addressType === 3 ? `[${address}]` : address, port: port });
 				remoteSocket = tcpSocket;
 				const writer = tcpSocket.writable.getWriter();
 				await writer.write(rawClientData);
