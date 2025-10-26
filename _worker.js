@@ -51,7 +51,7 @@ async function startTransferPipeline(ws, url) {
       const binBuffer = new Uint8Array(firstData);
       const formatVLKey = (a, i = 0) => [...a.slice(i, i + 16)].map(b => b.toString(16).padStart(2, '0')).join('').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/, '$1-$2-$3-$4-$5');
       if (formatVLKey(binBuffer.slice(1, 17)) !== USER_KEY) throw new Error('UUID verification failed');
-      const portIndex = 18 + binBuffer[17] + 1;
+      const portIndex = binBuffer[17] + 19;
       const destPort = new DataView(binBuffer.buffer, portIndex, 2).getUint16(0);
       if (destPort === 53) { // handle DNS-over-TCP tunneled queries
         const dnsQuery = binBuffer.slice(portIndex + 9);
@@ -65,24 +65,23 @@ async function startTransferPipeline(ws, url) {
         ws.send(await new Blob([lenHeader, dohArray]));
         return;
       }
-      const addrIndex = portIndex + 2;
-      addrType = binBuffer[addrIndex];
-      let addrInfoIndex = addrIndex + 1;
+      let addrIndex = portIndex + 2;
+      addrType = binBuffer[addrIndex++];
       switch (addrType) {
         case 1:
           addrLen = 4;
-          destHost = binBuffer.slice(addrInfoIndex, addrInfoIndex + addrLen).join('.');
+          destHost = binBuffer.slice(addrIndex, addrIndex + addrLen).join('.');
           break;
         case 2:
-          addrLen = binBuffer[addrInfoIndex];
-          addrInfoIndex += 1;
-          const domain = new TextDecoder().decode(binBuffer.slice(addrInfoIndex, addrInfoIndex + addrLen));
+          addrLen = binBuffer[addrIndex];
+          addrIndex++;
+          const domain = new TextDecoder().decode(binBuffer.slice(addrIndex, addrIndex + addrLen));
           destHost = domain;
           break;
         case 3:
           addrLen = 16;
           const ipv6 = [];
-          const readIPv6 = new DataView(binBuffer.buffer, addrInfoIndex, 16);
+          const readIPv6 = new DataView(binBuffer.buffer, addrIndex, 16);
           for (let i = 0; i < 8; i++) ipv6.push(readIPv6.getUint16(i * 2).toString(16).padStart(4, '0'));
           destHost = ipv6.join(':').replace(/(^|:)0+(\w)/g, '$1$2');
           break;
@@ -118,7 +117,7 @@ async function startTransferPipeline(ws, url) {
       await tcpConn.opened;
       writer = tcpConn.writable.getWriter();
       reader = tcpConn.readable.getReader();
-      const initialPayload = binBuffer.slice(addrInfoIndex + addrLen);
+      const initialPayload = binBuffer.slice(addrIndex + addrLen);
       if (initialPayload) await writer.write(initialPayload);
       startBackPipe().catch(e => console.error('pipe error', e));
       return;
