@@ -95,9 +95,9 @@ function parsewaliexiHeader(buffer, userID) {
 	}
 	return {
 		hasError: false,
-		addressRemote: address,
+		remoteAddress: address,
 		addressType,
-		portRemote: port,
+		remotePort: port,
 		rawDataIndex: offset,
 		waliexiVersion: version,
 	};
@@ -306,7 +306,7 @@ async function handlewaliexiWebSocket(request, url) {
 			async function connectAndWrite(address, port) {
 				let tcpSocket;
 				const enableSocksAll = tempurl.match(/s5all\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
-				tcpSocket = enableSocksAll ? await socks5Connect(result.addressType, result.addressRemote, result.portRemote, enableSocksAll)
+				tcpSocket = enableSocksAll ? await socks5Connect(result.addressType, result.remoteAddress, result.remotePort, enableSocksAll)
 					: connect({ hostname: result.addressType === 3 ? `[${address}]` : address, port: port });
 				remoteSocket = tcpSocket;
 				const writer = tcpSocket.writable.getWriter();
@@ -320,15 +320,15 @@ async function handlewaliexiWebSocket(request, url) {
 					const enableSocks = tempurl.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
 					const nat64Prefix = tempurl.match(/nat64pf\s*=\s*([^&]+)/i)?.[1];
 					if (enableSocks) {
-						tcpSocket = await socks5Connect(result.addressType, result.addressRemote, result.portRemote, enableSocks);
+						tcpSocket = await socks5Connect(result.addressType, result.remoteAddress, result.remotePort, enableSocks);
 					} else if (nat64Prefix) {
-						const nat64Address = await getNat64ProxyIP(result.addressRemote, nat64Prefix);
-						tcpSocket = await connect({ hostname: nat64Address, port: result.portRemote });
+						const nat64Address = await getNat64ProxyIP(result.remoteAddress, nat64Prefix);
+						tcpSocket = await connect({ hostname: nat64Address, port: result.remotePort });
 					} else {
 						const tmp_ips = tempurl.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
 						if (tmp_ips) {
 							const [latterip, formerport] = await parseHostPort(tmp_ips);
-							tcpSocket = await connect({ hostname: latterip, port: Number(formerport) || result.portRemote });
+							tcpSocket = await connect({ hostname: latterip, port: Number(formerport) || result.remotePort });
 						} else {
 							console.error('Connection failed: No proxy method specified');
 						}
@@ -351,7 +351,7 @@ async function handlewaliexiWebSocket(request, url) {
 				}
 			}
 			try {
-				const tcpSocket = await connectAndWrite(result.addressRemote, result.portRemote);
+				const tcpSocket = await connectAndWrite(result.remoteAddress, result.remotePort);
 				pipeRemoteToWebSocket(tcpSocket, serverWS, waliexiRespHeader, retry);
 			} catch (err) {
 				console.error('Connection failed:', err);
