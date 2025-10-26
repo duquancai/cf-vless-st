@@ -8,7 +8,9 @@
 		3、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
 		4、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
 		四种任选其一，如果不设置留空，cf相关的网站无法访问
-	注意：workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
+	注意：
+    	1、workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
+    	2、snippets部署的，nat64及william的proxyip域名"不支持"
 */
 import { connect } from "cloudflare:sockets";
 
