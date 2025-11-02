@@ -56,3 +56,82 @@ async function parseHostPort(hostSeg) {
 }
 const result = await parseHostPort('kr.william.ccwu.cc');
 console.log(result, "类型:", typeof result);
+
+async function httpConnect(addressRemote, portRemote, httpSpec) {
+  const [latter, former] = httpSpec.split(/@?([\d\[\]a-z.:]+(?::\d+)?)$/i);
+  let [username, password] = latter.split(':');
+  if (!password) { password = '' };
+  const [hostname, port] = await parseHostPort(former);
+  const sock = await connect({
+    hostname: hostname,
+    port: port
+  });
+  let connectRequest = `CONNECT ${addressRemote}:${portRemote} HTTP/1.1\r\n`;
+  connectRequest += `Host: ${addressRemote}:${portRemote}\r\n`;
+  if (username && password) {
+    const authString = `${username}:${password}`;
+    const base64Auth = btoa(authString);
+    connectRequest += `Proxy-Authorization: Basic ${base64Auth}\r\n`;
+  }
+  connectRequest += `User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\n`;
+  connectRequest += `Proxy-Connection: Keep-Alive\r\n`;
+  connectRequest += `Connection: Keep-Alive\r\n`;
+  connectRequest += `\r\n`;
+  try {
+    const writer = sock.writable.getWriter();
+    await writer.write(new TextEncoder().encode(connectRequest));
+    writer.releaseLock();
+  } catch (err) {
+    console.error('发送HTTP CONNECT请求失败:', err);
+    throw new Error(`发送HTTP CONNECT请求失败: ${err.message}`);
+  }
+  const reader = sock.readable.getReader();
+  let respText = '';
+  let connected = false;
+  let responseBuffer = new Uint8Array(0);
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) {
+        console.error('HTTP代理连接中断');
+        throw new Error('HTTP代理连接中断');
+      }
+      const newBuffer = new Uint8Array(responseBuffer.length + value.length);
+      newBuffer.set(responseBuffer);
+      newBuffer.set(value, responseBuffer.length);
+      responseBuffer = newBuffer;
+      respText = new TextDecoder().decode(responseBuffer);
+      if (respText.includes('\r\n\r\n')) {
+        const headersEndPos = respText.indexOf('\r\n\r\n') + 4;
+        const headers = respText.substring(0, headersEndPos);
+        if (headers.startsWith('HTTP/1.1 200') || headers.startsWith('HTTP/1.0 200')) {
+          connected = true;
+          if (headersEndPos < responseBuffer.length) {
+            const remainingData = responseBuffer.slice(headersEndPos);
+            const dataStream = new ReadableStream({
+              start(controller) {
+                controller.enqueue(remainingData);
+              }
+            });
+            const { readable, writable } = new TransformStream();
+            dataStream.pipeTo(writable).catch(err => console.error('处理剩余数据错误:', err));
+            sock.readable = readable;
+          }
+        } else {
+          const errorMsg = `HTTP代理连接失败: ${headers.split('\r\n')[0]}`;
+          console.error(errorMsg);
+          throw new Error(errorMsg);
+        }
+        break;
+      }
+    }
+  } catch (err) {
+    reader.releaseLock();
+    throw new Error(`处理HTTP代理响应失败: ${err.message}`);
+  }
+  reader.releaseLock();
+  if (!connected) {
+    throw new Error('HTTP代理连接失败: 未收到成功响应');
+  }
+  return sock;
+}
