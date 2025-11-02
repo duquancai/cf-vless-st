@@ -1,16 +1,18 @@
 /*
 纯手搓节点使用说明如下：
-	一、本程序预设：
-		userID=f1a50f1c-e751-4d62-83aa-926a7ae32955（强烈建议部署时更换）;
-	二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
-		1、socks5代理所有网站,格式：s5all=xxx
-		2、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
-		3、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
-		4、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
-		四种任选其一，如果不设置留空，cf相关的网站无法访问
-	注意：
-    	1、workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
-    	2、snippets部署的，nat64及william的proxyip域名"不支持"
+    一、本程序预设：
+      1、userID=f1a50f1c-e751-4d62-83aa-926a7ae32955（强烈建议部署时更换）
+    二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
+      1、socks5代理所有网站,格式：s5all=xxx
+      2、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
+      3、http代理cf相关的网站，非cf相关的网站走直连,格式：http=xxx或者http://xxx
+      4、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
+      5、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
+      6、如果path路径不设置留空，cf相关的网站无法访问
+      以上六种任选其一即可
+    注意：
+      1、workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
+      2、snippets部署的，nat64及william的proxyip域名"不支持"
 */
 import { connect } from "cloudflare:sockets";
 
@@ -124,6 +126,86 @@ async function getNat64ProxyIP(remoteAddress, nat64Prefix) {
 		return num.toString(16).padStart(2, '0');
 	});
 	return `[${nat64Prefix}${hex[0]}${hex[1]}:${hex[2]}${hex[3]}]`;
+}
+
+async function httpConnect(addressRemote, portRemote, httpSpec) {
+	const [latter, former] = httpSpec.split(/@?([\d\[\]a-z.:]+(?::\d+)?)$/i);
+	let [username, password] = latter.split(':');
+	if (!password) { password = '' };
+	const [hostname, port] = await parseHostPort(former);
+	const sock = await connect({
+		hostname: hostname,
+		port: port
+	});
+	let connectRequest = `CONNECT ${addressRemote}:${portRemote} HTTP/1.1\r\n`;
+	connectRequest += `Host: ${addressRemote}:${portRemote}\r\n`;
+	if (username && password) {
+		const authString = `${username}:${password}`;
+		const base64Auth = btoa(authString);
+		connectRequest += `Proxy-Authorization: Basic ${base64Auth}\r\n`;
+	}
+	connectRequest += `User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\n`;
+	connectRequest += `Proxy-Connection: Keep-Alive\r\n`;
+	connectRequest += `Connection: Keep-Alive\r\n`;
+	connectRequest += `\r\n`;
+	try {
+		const writer = sock.writable.getWriter();
+		await writer.write(new TextEncoder().encode(connectRequest));
+		writer.releaseLock();
+	} catch (err) {
+		console.error('The HTTP CONNECT request failed to send:', err);
+		throw new Error(`The HTTP CONNECT request failed to send: ${err.message}`);
+	}
+	const reader = sock.readable.getReader();
+	let respText = '';
+	let connected = false;
+	let responseBuffer = new Uint8Array(0);
+	try {
+		while (true) {
+			const { value, done } = await reader.read();
+			if (done) {
+				console.error('HTTP proxy connection interrupted');
+				throw new Error('HTTP proxy connection interrupted');
+			}
+			const newBuffer = new Uint8Array(responseBuffer.length + value.length);
+			newBuffer.set(responseBuffer);
+			newBuffer.set(value, responseBuffer.length);
+			responseBuffer = newBuffer;
+			respText = new TextDecoder().decode(responseBuffer);
+			if (respText.includes('\r\n\r\n')) {
+				const headersEndPos = respText.indexOf('\r\n\r\n') + 4;
+				const headers = respText.substring(0, headersEndPos);
+				if (headers.startsWith('HTTP/1.1 200') || headers.startsWith('HTTP/1.0 200')) {
+					connected = true;
+					if (headersEndPos < responseBuffer.length) {
+						const remainingData = responseBuffer.slice(headersEndPos);
+						const dataStream = new ReadableStream({
+							start(controller) {
+								controller.enqueue(remainingData);
+							}
+						});
+						const { readable, writable } = new TransformStream();
+						dataStream.pipeTo(writable).catch(err => console.error('Error processing remaining data:', err));
+						// @ts-ignore
+						sock.readable = readable;
+					}
+				} else {
+					const errorMsg = `HTTP proxy connection failed: ${headers.split('\r\n')[0]}`;
+					console.error(errorMsg);
+					throw new Error(errorMsg);
+				}
+				break;
+			}
+		}
+	} catch (err) {
+		reader.releaseLock();
+		throw new Error(`Failed to process HTTP proxy response: ${err.message}`);
+	}
+	reader.releaseLock();
+	if (!connected) {
+		throw new Error('HTTP proxy connection failed: No successful response received');
+	}
+	return sock;
 }
 
 async function parseHostPort(hostSeg) {
@@ -319,12 +401,16 @@ async function handlewaliexiWebSocket(request, url) {
 					let tcpSocket;
 					const enableSocks = tempurl.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
 					const nat64Prefix = tempurl.match(/nat64pf\s*=\s*([^&]+)/i)?.[1];
+					const httpPIP = tempurl.match(/http\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
 					if (enableSocks) {
 						tcpSocket = await socks5Connect(result.addressType, result.remoteAddress, result.remotePort, enableSocks);
+					} else if (httpPIP) {
+						tcpSocket = await httpConnect(result.remoteAddress, result.remotePort, httpPIP);
 					} else if (nat64Prefix) {
 						const nat64Address = await getNat64ProxyIP(result.remoteAddress, nat64Prefix);
 						tcpSocket = await connect({ hostname: nat64Address, port: result.remotePort });
-					} else {
+					}
+					else {
 						const tmp_ips = tempurl.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
 						if (tmp_ips) {
 							const [latterip, formerport] = await parseHostPort(tmp_ips);
