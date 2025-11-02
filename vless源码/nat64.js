@@ -82,8 +82,8 @@ async function httpConnect(addressRemote, portRemote, httpSpec) {
     await writer.write(new TextEncoder().encode(connectRequest));
     writer.releaseLock();
   } catch (err) {
-    console.error('发送HTTP CONNECT请求失败:', err);
-    throw new Error(`发送HTTP CONNECT请求失败: ${err.message}`);
+    console.error('The HTTP CONNECT request failed to send:', err);
+    throw new Error(`The HTTP CONNECT request failed to send: ${err.message}`);
   }
   const reader = sock.readable.getReader();
   let respText = '';
@@ -93,8 +93,8 @@ async function httpConnect(addressRemote, portRemote, httpSpec) {
     while (true) {
       const { value, done } = await reader.read();
       if (done) {
-        console.error('HTTP代理连接中断');
-        throw new Error('HTTP代理连接中断');
+        console.error('HTTP proxy connection interrupted');
+        throw new Error('HTTP proxy connection interrupted');
       }
       const newBuffer = new Uint8Array(responseBuffer.length + value.length);
       newBuffer.set(responseBuffer);
@@ -114,11 +114,12 @@ async function httpConnect(addressRemote, portRemote, httpSpec) {
               }
             });
             const { readable, writable } = new TransformStream();
-            dataStream.pipeTo(writable).catch(err => console.error('处理剩余数据错误:', err));
+            dataStream.pipeTo(writable).catch(err => console.error('Error processing remaining data:', err));
+            // @ts-ignore
             sock.readable = readable;
           }
         } else {
-          const errorMsg = `HTTP代理连接失败: ${headers.split('\r\n')[0]}`;
+          const errorMsg = `HTTP proxy connection failed: ${headers.split('\r\n')[0]}`;
           console.error(errorMsg);
           throw new Error(errorMsg);
         }
@@ -127,11 +128,11 @@ async function httpConnect(addressRemote, portRemote, httpSpec) {
     }
   } catch (err) {
     reader.releaseLock();
-    throw new Error(`处理HTTP代理响应失败: ${err.message}`);
+    throw new Error(`Failed to process HTTP proxy response: ${err.message}`);
   }
   reader.releaseLock();
   if (!connected) {
-    throw new Error('HTTP代理连接失败: 未收到成功响应');
+    throw new Error('HTTP proxy connection failed: No successful response received');
   }
   return sock;
 }
