@@ -8,9 +8,10 @@
     二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
       1、socks5代理所有网站,格式：s5all=xxx
       2、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
-      3、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
-      4、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
-      四种任选其一，如果不设置留空，cf相关的网站无法访问
+      3、http代理cf相关的网站，非cf相关的网站走直连,格式：http=xxx或者http://xxx
+      4、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
+      5、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
+      五种任选其一，如果不设置留空，cf相关的网站无法访问
     注意：
       1、workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
       2、snippets部署的，nat64及william的proxyip域名"不支持"
@@ -98,13 +99,17 @@ async function startTransferPipeline(ws, url) {
         } catch {
           const pyipMatch = tempPath.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
           const nat64Match = tempPath.match(/nat64pf\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
+          const httpMatch = tempPath.match(/http\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
           if (pyipMatch) {
             const [proxyHost, proxyPort] = await parseHostPort(pyipMatch);
             tcpConn = connect({ hostname: proxyHost, port: proxyPort });
           } else if (nat64Match) {
             const nat64IP = await getNat64ProxyIP(destHost, nat64Match);
             tcpConn = connect({ hostname: nat64IP, port: destPort });
-          } else {
+          } else if (httpMatch) {
+            tcpConn = await httpConnect(destHost, destPort, httpMatch);
+          }
+          else {
             const socksMatch = tempPath.match(/socks5\s*(?:=|(?::\/\/))\s*([^&]+(?:\d+)?)/i)?.[1];
             if (socksMatch) {
               tcpConn = await createSocks5Connection(addrType, destHost, destPort, socksMatch);
@@ -203,6 +208,85 @@ async function createSocks5Connection(addrType, destHost, destPort, socks5Spec) 
   reader?.releaseLock();
   await socks5Conn?.close();
   throw new Error(`SOCKS5 account failed`);
+}
+
+async function httpConnect(addressRemote, portRemote, httpSpec) {
+  const [latter, former] = httpSpec.split(/@?([\d\[\]a-z.:]+(?::\d+)?)$/i);
+  let [username, password] = latter.split(':');
+  if (!password) { password = '' };
+  const [hostname, port] = await parseHostPort(former);
+  const sock = await connect({
+    hostname: hostname,
+    port: port
+  });
+  let connectRequest = `CONNECT ${addressRemote}:${portRemote} HTTP/1.1\r\n`;
+  connectRequest += `Host: ${addressRemote}:${portRemote}\r\n`;
+  if (username && password) {
+    const authString = `${username}:${password}`;
+    const base64Auth = btoa(authString);
+    connectRequest += `Proxy-Authorization: Basic ${base64Auth}\r\n`;
+  }
+  connectRequest += `User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\n`;
+  connectRequest += `Proxy-Connection: Keep-Alive\r\n`;
+  connectRequest += `Connection: Keep-Alive\r\n`;
+  connectRequest += `\r\n`;
+  try {
+    const writer = sock.writable.getWriter();
+    await writer.write(new TextEncoder().encode(connectRequest));
+    writer.releaseLock();
+  } catch (err) {
+    console.error('发送HTTP CONNECT请求失败:', err);
+    throw new Error(`发送HTTP CONNECT请求失败: ${err.message}`);
+  }
+  const reader = sock.readable.getReader();
+  let respText = '';
+  let connected = false;
+  let responseBuffer = new Uint8Array(0);
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) {
+        console.error('HTTP代理连接中断');
+        throw new Error('HTTP代理连接中断');
+      }
+      const newBuffer = new Uint8Array(responseBuffer.length + value.length);
+      newBuffer.set(responseBuffer);
+      newBuffer.set(value, responseBuffer.length);
+      responseBuffer = newBuffer;
+      respText = new TextDecoder().decode(responseBuffer);
+      if (respText.includes('\r\n\r\n')) {
+        const headersEndPos = respText.indexOf('\r\n\r\n') + 4;
+        const headers = respText.substring(0, headersEndPos);
+        if (headers.startsWith('HTTP/1.1 200') || headers.startsWith('HTTP/1.0 200')) {
+          connected = true;
+          if (headersEndPos < responseBuffer.length) {
+            const remainingData = responseBuffer.slice(headersEndPos);
+            const dataStream = new ReadableStream({
+              start(controller) {
+                controller.enqueue(remainingData);
+              }
+            });
+            const { readable, writable } = new TransformStream();
+            dataStream.pipeTo(writable).catch(err => console.error('处理剩余数据错误:', err));
+            sock.readable = readable;
+          }
+        } else {
+          const errorMsg = `HTTP代理连接失败: ${headers.split('\r\n')[0]}`;
+          console.error(errorMsg);
+          throw new Error(errorMsg);
+        }
+        break;
+      }
+    }
+  } catch (err) {
+    reader.releaseLock();
+    throw new Error(`处理HTTP代理响应失败: ${err.message}`);
+  }
+  reader.releaseLock();
+  if (!connected) {
+    throw new Error('HTTP代理连接失败: 未收到成功响应');
+  }
+  return sock;
 }
 
 async function getNat64ProxyIP(remoteAddress, nat64Prefix) {
