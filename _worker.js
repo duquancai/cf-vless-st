@@ -11,7 +11,8 @@
       3、http代理cf相关的网站，非cf相关的网站走直连,格式：http=xxx或者http://xxx
       4、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
       5、nat64代理cf相关的网站，非cf相关的网站走直连,格式：nat64pf=[2602:fc59:b0:64::]
-      五种任选其一，如果不设置留空，cf相关的网站无法访问
+      6、如果path路径不设置留空，cf相关的网站无法访问
+      以上六种任选其一即可
     注意：
       1、workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
       2、snippets部署的，nat64及william的proxyip域名"不支持"
