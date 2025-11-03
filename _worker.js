@@ -6,7 +6,7 @@
         开启使用控流可降低CPU超时的概率，提升连接稳定性，适合轻度使用，日常使用应该绰绰有余
       3、FLOW_CHUNK_SIZE = 64; 单位字节，相当于分片大小
     二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
-      1、socks5代理所有网站,格式：s5all=xxx
+      1、socks5或者http代理所有网站(即：全局代理),格式：s5all=xxx或者httpall=xxx,二者任选其一
       2、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx
       3、http代理cf相关的网站，非cf相关的网站走直连,格式：http=xxx或者http://xxx
       4、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx
@@ -90,9 +90,11 @@ async function startTransferPipeline(ws, url) {
         default:
           throw new Error('Invalid destination address');
       }
-      const socksAllMatch = tempPath.match(/s5all\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
-      if (socksAllMatch) {
-        tcpConn = await createSocks5Connection(addrType, destHost, destPort, socksAllMatch);
+      const socksAllMatch = tempPath.match(/(http|s5)all\s*=\s*([^&]+(?:\d+)?)/i);
+      if (socksAllMatch[1] === 's5') {
+        tcpConn = await createSocks5Connection(addrType, destHost, destPort, socksAllMatch[2]);
+      } else if (socksAllMatch[1] === 'http') {
+        tcpConn = await httpConnect(destHost, destPort, socksAllMatch[2]);
       } else {
         try {
           tcpConn = connect({ hostname: addrType === 3 ? `[${destHost}]` : destHost, port: destPort });
