@@ -17,7 +17,7 @@
         开启使用控流可降低CPU超时的概率，提升连接稳定性，适合轻度使用，日常使用应该绰绰有余<br>
       3、FLOW_CHUNK_SIZE = 64; 单位字节，相当于分片大小<br>
     二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递<br>
-      1、socks5代理所有网站,格式：s5all=xxx<br>
+      1、socks5或者http代理所有网站(即：全局代理),格式：s5all=xxx或者httpall=xxx,二者任选其一<br>
       2、socks5代理cf相关的网站，非cf相关的网站走直连,格式：socks5=xxx或者socks5://xxx<br>
       3、http代理cf相关的网站，非cf相关的网站走直连,格式：http=xxx或者http://xxx<br>
       4、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：pyip=xxx或者proxyip=xxx<br>
