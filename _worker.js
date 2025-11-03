@@ -91,9 +91,9 @@ async function startTransferPipeline(ws, url) {
           throw new Error('Invalid destination address');
       }
       const socksAllMatch = tempPath.match(/(http|s5)all\s*=\s*([^&]+(?:\d+)?)/i);
-      if (socksAllMatch[1] === 's5') {
+      if (socksAllMatch != null && socksAllMatch[1] === 's5') {
         tcpConn = await createSocks5Connection(addrType, destHost, destPort, socksAllMatch[2]);
-      } else if (socksAllMatch[1] === 'http') {
+      } else if (socksAllMatch != null && socksAllMatch[1] === 'http') {
         tcpConn = await httpConnect(destHost, destPort, socksAllMatch[2]);
       } else {
         try {

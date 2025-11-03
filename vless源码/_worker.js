@@ -388,9 +388,9 @@ async function handlewaliexiWebSocket(request, url) {
 			async function connectAndWrite(address, port) {
 				let tcpSocket;
 				const enableSocksAll = tempurl.match(/(http|s5)all\s*=\s*([^&]+(?:\d+)?)/i);
-				if (enableSocksAll[1] === 's5') {
+				if (enableSocksAll != null && enableSocksAll[1] === 's5') {
 					tcpSocket = await socks5Connect(result.addressType, result.remoteAddress, result.remotePort, enableSocksAll[2]);
-				} else if (enableSocksAll[1] === 'http') {
+				} else if (enableSocksAll != null && enableSocksAll[1] === 'http') {
 					tcpSocket = await httpConnect(result.remoteAddress, result.remotePort, enableSocksAll[2]);
 				} else {
 					tcpSocket = await connect({ hostname: result.addressType === 3 ? `[${address}]` : address, port: port });
