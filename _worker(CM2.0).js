@@ -74,7 +74,7 @@ function handleConnection(ws, request) {
     let isConnecting = false, isReading = false;
     let score = 1.0, lastCheck = Date.now(), lastRxBytes = 0, successCount = 0, failCount = 0;
     let stats = { total: 0, count: 0, bigChunks: 0, window: 0, timestamp: Date.now() };
-    let mode = 'direct', avgSize = 0, throughputs = [];
+    let mode = 'adaptive', avgSize = 0, throughputs = [];
     const updateMode = size => {
         stats.total += size;
         stats.count++;
