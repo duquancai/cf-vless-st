@@ -24,7 +24,7 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 1. workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
 2. snippets部署的，nat64及william的反代**域名**"不支持"
 #### (四) 纯手搓示意图（以v2rayN客户端为例）
-   ![这是图片](/image/手搓.png "vless")<br>
+   <img width="1540" height="1293" alt="image" src="https://github.com/user-attachments/assets/2cf8e34a-33a8-42c2-b235-1cdf8f106c97" />
  -------------------------------------------------------------
 ### 三、优选IP的运用
 | IPv4 | IPv6 | Domain |
