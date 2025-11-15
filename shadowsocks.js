@@ -10,7 +10,7 @@
       5、如果path路径不设置留空，cf相关的网站无法访问
       以上五种任选其一即可
     注意：
-      1、workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
+      1、workers、snippets都可以部署，纯手搓443系6个端口节点shadowsocks+ws+tls
       2、snippets部署的，william的proxyip域名"不支持"
 */
 import { connect } from "cloudflare:sockets";
