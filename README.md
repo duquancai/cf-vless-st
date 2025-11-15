@@ -3,10 +3,10 @@
 
 1. 本项目收集了一些CF部署原码并通过本人理解并精心修改重构，旨在开源以供他人所需
 2. 本项目仅支持本地化CF部署，强烈建议纯手搓节点，后面有手搓节点示意图
-3. 打开源码：_worker.js, _worker(1.0).js, _worker(2.0).js **部署前请认真阅读代码头部的注释"使用说明"**
+3. 打开源码：shadowsocks.js **部署前请认真阅读代码头部的注释"使用说明"**
  -------------------------------------------------------------
 ### 二、脚本特色
-#### (一) 支持workers、pages、snippets部署，vless+ws+tls代理节点
+#### (一) 支持workers、snippets部署，shadowsocks+ws+tls代理节点
 #### (二) 脚本没有任何预设，也没有订阅链接，部署后纯手搓节点, 部署前请认真阅读代码头部的注释"使用说明"
 #### (三) 极大的丰富了反代功能的使用
 v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递，**以下任选其一**<br>
@@ -19,9 +19,8 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 | socks5代理cf网站 |socks5=IPv4:port<br>socks5://IPv4:port|socks5=[IPv6]:port<br>socks5://[IPv6]:port|socks5=domain:port<br>socks5://domain:port|
 | http或者https代理cf网站 |http=IPv4:port<br>`http://IPv4:port`|http=[IPv6]:port<br>http://[IPv6]:port|http=domain:port<br>`http://domain:port`|
 | proxyip代理cf网站 |pyip=IPv4:port<br>proxyip=IPv4:port|pyip=[IPv6]:port<br>proxyip=[IPv6]:port|pyip=domain:port<br>proxyip=domain:port|
-| nat64代理cf网站 | |nat64pf=[2602:fc59:b0:64::]| |
 #### 注意
-1. workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
+1. workers、snippets都可以部署，纯手搓443系6个端口节点shadowsocks+ws+tls
 2. snippets部署的，nat64及william的反代**域名**"不支持"
 #### (四) 纯手搓示意图（以v2rayN客户端为例）
    <img width="1540" height="1293" alt="image" src="https://github.com/user-attachments/assets/2cf8e34a-33a8-42c2-b235-1cdf8f106c97" />
