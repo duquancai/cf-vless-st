@@ -1,5 +1,21 @@
+/*
+纯手搓节点使用说明如下：
+    一、本程序预设：
+      1、PASSWORD=abc（强烈建议部署时更换）
+        注意：v2rayN客户端密码、路径与部署的保持一致！
+    二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
+      1、socks5代理cf相关的网站，非cf相关的网站走直连,格式：abc/socks5=xxx
+      2、http代理cf相关的网站，非cf相关的网站走直连,格式：abc/http=xxx
+      3、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：abc/proxyip=xxx
+      4、路径只填写abc，走直连，cf相关的网站打不开，格式：abc
+      以上四种任选其一即可
+    注意：
+      1、workers、pages、snippets都可以部署，纯手搓443系6个端口节点ss+ws+tls
+      2、snippets部署的，william的proxyip域名"不支持"
+*/
+
 import { connect } from 'cloudflare:sockets';
-const PASSWORD = 'abc';  // 一般用UUID,路径验证
+const PASSWORD = 'abc';
 
 function closeSocketQuietly(socket) {
     try {
@@ -290,9 +306,9 @@ async function forwardataTCP(host, portNum, rawData, ws, respHeader, remoteConnW
     if (proxyConfig) {
         shouldUseProxy = true;
     } else if (!proxyConfig) {
-        proxyConfigCrull = parsePryAddress(pyipMatch);
+        proxyConfigCrull = await parsePryAddress(pyipMatch);
     } else {
-        proxyConfigCrull = parsePryAddress(pyipMatch);
+        proxyConfigCrull = await parsePryAddress(pyipMatch);
         if (proxyConfig[1] === 'socks5' || proxyConfig[1] === 'http') {
             shouldUseProxy = true;
         }
@@ -305,7 +321,7 @@ async function forwardataTCP(host, portNum, rawData, ws, respHeader, remoteConnW
         } else if (proxyConfig != null && proxyConfig[1].toLowerCase() === 'http') {
             newSocket = await connect2Http(proxyConfig[2], host, portNum, rawData);
         } else {
-            newSocket = await connectDirect(proxyConfigCrull[1], proxyConfigCrull[2], rawData);
+            newSocket = await connectDirect(proxyConfigCrull[0], proxyConfigCrull[1], rawData);
         }
         remoteConnWrapper.socket = newSocket;
         newSocket.closed.catch(() => { }).finally(() => closeSocketQuietly(ws));

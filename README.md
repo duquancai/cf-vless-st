@@ -6,7 +6,7 @@
 3. 打开源码：shadowsocks.js **部署前请认真阅读代码头部的注释"使用说明"**
  -------------------------------------------------------------
 ### 二、脚本特色
-#### (一) 支持workers、snippets部署，shadowsocks+ws+tls代理节点
+#### (一) 支持workers、pages、snippets部署，ss+ws+tls代理节点
 #### (二) 脚本没有任何预设，也没有订阅链接，部署后纯手搓节点, 部署前请认真阅读代码头部的注释"使用说明"
 #### (三) 极大的丰富了反代功能的使用
 v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递，**以下任选其一**<br>
@@ -14,17 +14,14 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 支持socks5或http**用户名:密码或者为空**<br>
 | 代理类型 | IPv4形式 | IPv6形式 | 域名形式 |
 |------|------|------|------|
-| socks5全局代理 |s5all=IPv4:port|s5all=[IPv6]:port |s5all=domain:port|
-| http或者https全局代理 |httpall=IPv4:port|httpall=[IPv6]:port|httpall=domain:port|
-| socks5代理cf网站 |socks5=IPv4:port<br>socks5://IPv4:port|socks5=[IPv6]:port<br>socks5://[IPv6]:port|socks5=domain:port<br>socks5://domain:port|
-| http或者https代理cf网站 |http=IPv4:port<br>`http://IPv4:port`|http=[IPv6]:port<br>http://[IPv6]:port|http=domain:port<br>`http://domain:port`|
-| proxyip代理cf网站 |pyip=IPv4:port<br>proxyip=IPv4:port|pyip=[IPv6]:port<br>proxyip=[IPv6]:port|pyip=domain:port<br>proxyip=domain:port|
+| socks5代理cf网站 |socks5=IPv4:port|socks5=[IPv6]:port|socks5=domain:port|
+| http或者https代理cf网站 |http=IPv4:port|http=[IPv6]:port|http=domain:port|
+| proxyip代理cf网站 |proxyip=IPv4:port|proxyip=[IPv6]:port|proxyip=domain:port|
 #### 注意
-1. workers、snippets都可以部署，纯手搓443系6个端口节点shadowsocks+ws+tls
-2. snippets部署的，nat64及william的反代**域名**"不支持"
-#### (四) 纯手搓示意图（以v2rayN客户端为例）
-   <img width="1540" height="1293" alt="image" src="https://github.com/user-attachments/assets/2cf8e34a-33a8-42c2-b235-1cdf8f106c97" />
-
+1. PASSWORD为节点密码，v2rayN客户端的密码、路径与部署的保持一致！
+2. workers、pages、snippets都可以部署，纯手搓443系6个端口节点ss+ws+tls
+3. snippets部署的，william的反代**域名**"不支持"
+-------------------------------------------------------------
 ### 三、优选IP的运用
 | IPv4 | IPv6 | Domain |
 |------|------|------|
@@ -41,7 +38,7 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 2. 电脑Windows：[v2rayN](https://github.com/2dust/v2rayN/tags)、[Hiddify](https://github.com/hiddify/hiddify-next/tags)、[Karing](https://github.com/KaringX/karing/tags)
 -------------------------------------------------------------
 ### 🛠 开源代码引用
-- [cmliu/edgetunnel/tree/beta2.0](https://github.com/cmliu/edgetunnel/tree/beta2.0)
+- [eooce/Cloudflare-proxy](https://github.com/eooce/Cloudflare-proxy)
 -------------------------------------------------------------
 ## 感谢您右上角加Star🌟
 [![Star History Chart](https://api.star-history.com/svg?repos=duquancai/cf-vless-st&type=Date)](https://www.star-history.com/#duquancai/cf-vless-st&Date)
