@@ -14,8 +14,8 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 支持socks5或http**用户名:密码或者为空**<br>
 | 代理类型 | IPv4形式 | IPv6形式 | 域名形式 |
 |------|------|------|------|
-| socks5代理cf网站 |socks5=IPv4:port|socks5=[IPv6]:port|socks5=domain:port|
-| http或者https代理cf网站 |http=IPv4:port|http=[IPv6]:port|http=domain:port|
+| socks5代理全局 |socks5=IPv4:port|socks5=[IPv6]:port|socks5=domain:port|
+| http或者https代理全局 |http=IPv4:port|http=[IPv6]:port|http=domain:port|
 | proxyip代理cf网站 |proxyip=IPv4:port|proxyip=[IPv6]:port|proxyip=domain:port|
 #### 注意
 1. PASSWORD为节点密码，v2rayN客户端的密码、路径与部署的保持一致！
