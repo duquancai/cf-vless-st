@@ -103,8 +103,8 @@ async function handleSSRequest(request, crulledUrl) {
                 writer.releaseLock();
                 return;
             }
-            const { hasError, message, addressType, port, hostname, rawIndex } = parseSSPacketHeader(chunk);
-            if (hasError) throw new Error(message);
+            const { hasError, addressType, port, hostname, rawIndex } = parseSSPacketHeader(chunk);
+            if (hasError) throw new Error('Error Type:' + addressType);
             const rawData = chunk.slice(rawIndex);
             await forwardataTCP(hostname, port, rawData, serverSock, null, remoteConnWrapper, crulledUrl);
         },
@@ -300,15 +300,15 @@ async function forwardataTCP(host, portNum, rawData, ws, respHeader, remoteConnW
         return remoteSock;
     }
     const proxyConfig = customProxyIP.match(/(http|socks5)\s*=\s*([^&]+(?:\d+)?)/i);
-    const pyipMatch = customProxyIP.match(/proxyip\s*=\s*([^&]+(?:\d+)?)/i)?.[1];
+    let pyipMatch = customProxyIP.match(/proxyip\s*=\s*([^&]+(?:\d+)?)/i);
     let proxyConfigCrull = null;
     let shouldUseProxy = false;
     if (proxyConfig) {
         shouldUseProxy = true;
     } else if (!proxyConfig) {
-        proxyConfigCrull = await parsePryAddress(pyipMatch);
+        proxyConfigCrull = await parsePryAddress(pyipMatch ? pyipMatch[1] : '');
     } else {
-        proxyConfigCrull = await parsePryAddress(pyipMatch);
+        proxyConfigCrull = await parsePryAddress(pyipMatch ? pyipMatch[1] : '');
         if (proxyConfig[1] === 'socks5' || proxyConfig[1] === 'http') {
             shouldUseProxy = true;
         }
