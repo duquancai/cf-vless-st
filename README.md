@@ -21,7 +21,10 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 1. PASSWORD为节点密码，v2rayN客户端的密码、路径与部署的保持一致！
 2. workers、pages、snippets都可以部署，纯手搓443系6个端口节点ss+ws+tls
 3. snippets部署的，william的反代**域名**"不支持"
--------------------------------------------------------------
+4. SS纯手搓示意图（以v2rayN客户端为例）
+
+   <img width="700" height="600" alt="image" src="https://github.com/user-attachments/assets/dd938d8d-c5a4-469b-99b2-5b39ddbf9ac8" />
+
 ### 三、优选IP的运用
 | IPv4 | IPv6 | Domain |
 |------|------|------|
