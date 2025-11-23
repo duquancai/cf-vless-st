@@ -25,9 +25,9 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 2. snippets部署的，nat64及william的反代**域名**"不支持"
 #### (四) 纯手搓示意图（以v2rayN客户端为例）
 1. vless纯手搓示意图
-   <img width="700" height="600" alt="image" src="https://github.com/user-attachments/assets/1201476d-dfdd-4a48-9eda-afe859840d53" />
+   ![vless手搓图例](/image/vless手搓图例.png)
 2. SS纯手搓示意图
-   <img width="700" height="600" alt="image" src="https://github.com/user-attachments/assets/dd938d8d-c5a4-469b-99b2-5b39ddbf9ac8" />
+   ![SS手搓图例](/image/SS手搓图例.png)
 ### 三、优选IP的运用
 | IPv4 | IPv6 | Domain |
 |------|------|------|
