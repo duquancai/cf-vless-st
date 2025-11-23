@@ -3,30 +3,32 @@
 
 1. 本项目收集了一些CF部署原码并通过本人理解并精心修改重构，旨在开源以供他人所需
 2. 本项目仅支持本地化CF部署，强烈建议纯手搓节点，后面有手搓节点示意图
-3. 打开源码：_worker.js, _worker(1.0).js, _worker(2.0).js **部署前请认真阅读代码头部的注释"使用说明"**
+3. 打开源码：js源码 **部署前请认真阅读代码头部的注释"使用说明"**
  -------------------------------------------------------------
 ### 二、脚本特色
-#### (一) 支持workers、pages、snippets部署，vless+ws+tls代理节点
+#### (一) 支持workers、pages、snippets部署
 #### (二) 脚本没有任何预设，也没有订阅链接，部署后纯手搓节点, 部署前请认真阅读代码头部的注释"使用说明"
-#### (三) 极大的丰富了反代功能的使用
+#### (三) 反代功能使用路径传参，程序中不预设任何proxyip反代
 v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递，**以下任选其一**<br>
 支持IPV4、IPV6、域名三种方式（**端口为443时，可不写:port**）<br>
 支持socks5或http**用户名:密码或者为空**<br>
-| 代理类型 | IPv4形式 | IPv6形式 | 域名形式 |
-|------|------|------|------|
-| socks5全局代理 |s5all=IPv4:port|s5all=[IPv6]:port |s5all=domain:port|
-| http或者https全局代理 |httpall=IPv4:port|httpall=[IPv6]:port|httpall=domain:port|
-| socks5代理cf网站 |socks5=IPv4:port<br>socks5://IPv4:port|socks5=[IPv6]:port<br>socks5://[IPv6]:port|socks5=domain:port<br>socks5://domain:port|
-| http或者https代理cf网站 |http=IPv4:port<br>`http://IPv4:port`|http=[IPv6]:port<br>http://[IPv6]:port|http=domain:port<br>`http://domain:port`|
+| 代理类型 | IPv4形式 | IPv6形式 | 域名形式 | 说明 |
+|------|------|------|------|------|
+| socks5全局代理 |s5all=IPv4:port|s5all=[IPv6]:port |s5all=domain:port| |
+| http或者https全局代理 |httpall=IPv4:port|httpall=[IPv6]:port|httpall=domain:port| |
+| socks5代理cf网站 |socks5=IPv4:port<br>socks5://IPv4:port|socks5=[IPv6]:port<br>socks5://[IPv6]:port|socks5=domain:port<br>socks5://domain:port|**SS不支持**|
+| http或者https代理cf网站 |http=IPv4:port<br>`http://IPv4:port`|http=[IPv6]:port<br>http://[IPv6]:port|http=domain:port<br>`http://domain:port`|**SS不支持**|
 | proxyip代理cf网站 |pyip=IPv4:port<br>proxyip=IPv4:port|pyip=[IPv6]:port<br>proxyip=[IPv6]:port|pyip=domain:port<br>proxyip=domain:port|
-| nat64代理cf网站 | |nat64pf=[2602:fc59:b0:64::]| |
+| nat64代理cf网站 | |nat64pf=[2602:fc59:b0:64::]| |**SS不支持**|
 #### 注意
-1. workers、pages、snippets都可以部署，纯手搓443系6个端口节点vless+ws+tls
+<<<<<<< HEAD
+1. workers、pages、snippets都可以部署，纯手搓443系6个端口节点
 2. snippets部署的，nat64及william的反代**域名**"不支持"
-#### (四) vless纯手搓示意图（以v2rayN客户端为例）
-
+#### (四) 纯手搓示意图（以v2rayN客户端为例）
+1. vless纯手搓示意图
    <img width="700" height="600" alt="image" src="https://github.com/user-attachments/assets/1201476d-dfdd-4a48-9eda-afe859840d53" />
- 
+2. SS纯手搓示意图
+   <img width="700" height="600" alt="image" src="https://github.com/user-attachments/assets/dd938d8d-c5a4-469b-99b2-5b39ddbf9ac8" />
 ### 三、优选IP的运用
 | IPv4 | IPv6 | Domain |
 |------|------|------|
@@ -44,6 +46,7 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 -------------------------------------------------------------
 ### 🛠 开源代码引用
 - [cmliu/edgetunnel/tree/beta2.0](https://github.com/cmliu/edgetunnel/tree/beta2.0)
+
 -------------------------------------------------------------
 ## 感谢您右上角加Star🌟
 [![Star History Chart](https://api.star-history.com/svg?repos=duquancai/cf-vless-st&type=Date)](https://www.star-history.com/#duquancai/cf-vless-st&Date)
