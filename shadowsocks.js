@@ -4,9 +4,9 @@
       1、PASSWORD=abc（强烈建议部署时更换）
         注意：v2rayN客户端密码、路径与部署的保持一致！
     二、v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传递
-      1、socks5代理全局,格式：abc/socks5=xxx
-      2、http代理全局,格式：abc/http=xxx
-      3、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：abc/proxyip=xxx
+      1、socks5代理全局,格式：abc/s5all=xxx
+      2、http代理全局,格式：abc/httpall=xxx
+      3、proxyip代理cf相关的网站，非cf相关的网站走直连,格式：abc/proxyip=xxxh或者abc/pyip=xxx
       4、路径只填写abc，走直连，cf相关的网站打不开，格式：abc
       以上四种任选其一即可
     注意：
@@ -299,8 +299,8 @@ async function forwardataTCP(host, portNum, rawData, ws, respHeader, remoteConnW
         writer.releaseLock();
         return remoteSock;
     }
-    const proxyConfig = customProxyIP.match(/(http|socks5)\s*=\s*([^&]+(?:\d+)?)/i);
-    let pyipMatch = customProxyIP.match(/proxyip\s*=\s*([^&]+(?:\d+)?)/i);
+    const proxyConfig = customProxyIP.match(/(http|s5)all\s*=\s*([^&]+(?:\d+)?)/i);
+    let pyipMatch = customProxyIP.match(/p(?:rox)?yip\s*=\s*([^&]+(?:\d+)?)/i);
     let proxyConfigCrull = null;
     let shouldUseProxy = false;
     if (proxyConfig) {
@@ -309,14 +309,14 @@ async function forwardataTCP(host, portNum, rawData, ws, respHeader, remoteConnW
         proxyConfigCrull = await parsePryAddress(pyipMatch ? pyipMatch[1] : '');
     } else {
         proxyConfigCrull = await parsePryAddress(pyipMatch ? pyipMatch[1] : '');
-        if (proxyConfig[1] === 'socks5' || proxyConfig[1] === 'http') {
+        if (proxyConfig[1] === 's5' || proxyConfig[1] === 'http') {
             shouldUseProxy = true;
         }
     }
 
     async function connecttoPry() {
         let newSocket;
-        if (proxyConfig != null && proxyConfig[1].toLowerCase() === 'socks5') {
+        if (proxyConfig != null && proxyConfig[1].toLowerCase() === 's5') {
             newSocket = await connect2Socks5(proxyConfig[2], host, portNum, rawData);
         } else if (proxyConfig != null && proxyConfig[1].toLowerCase() === 'http') {
             newSocket = await connect2Http(proxyConfig[2], host, portNum, rawData);
