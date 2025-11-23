@@ -21,7 +21,6 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 | proxyip代理cf网站 |pyip=IPv4:port<br>proxyip=IPv4:port|pyip=[IPv6]:port<br>proxyip=[IPv6]:port|pyip=domain:port<br>proxyip=domain:port|
 | nat64代理cf网站 | |nat64pf=[2602:fc59:b0:64::]| |**SS不支持**|
 #### 注意
-<<<<<<< HEAD
 1. workers、pages、snippets都可以部署，纯手搓443系6个端口节点
 2. snippets部署的，nat64及william的反代**域名**"不支持"
 #### (四) 纯手搓示意图（以v2rayN客户端为例）
@@ -46,7 +45,7 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 -------------------------------------------------------------
 ### 🛠 开源代码引用
 - [cmliu/edgetunnel/tree/beta2.0](https://github.com/cmliu/edgetunnel/tree/beta2.0)
-
+- [eooce/Cloudflare-proxy](https://github.com/eooce/Cloudflare-proxy)
 -------------------------------------------------------------
 ## 感谢您右上角加Star🌟
 [![Star History Chart](https://api.star-history.com/svg?repos=duquancai/cf-vless-st&type=Date)](https://www.star-history.com/#duquancai/cf-vless-st&Date)
