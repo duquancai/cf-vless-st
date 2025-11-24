@@ -39,9 +39,8 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
   -------------------------------------------------------------
 ### 四、客户端推荐
 #### 点击名称即跳转到官方下载地址
-1. 安卓Android：[v2rayNG](https://github.com/2dust/v2rayNG/tags)、[Nekobox](https://github.com/starifly/NekoBoxForAndroid/releases)、[Karing](https://github.com/KaringX/karing/tags) <br>
-
-2. 电脑Windows：[v2rayN](https://github.com/2dust/v2rayN/tags)、[Hiddify](https://github.com/hiddify/hiddify-next/tags)、[Karing](https://github.com/KaringX/karing/tags)
+1. 安卓Android：[v2rayNG](https://github.com/2dust/v2rayNG/tags) <br>
+2. 电脑Windows：[v2rayN](https://github.com/2dust/v2rayN/tags)
 -------------------------------------------------------------
 ### 🛠 开源代码引用
 - [cmliu/edgetunnel/tree/beta2.0](https://github.com/cmliu/edgetunnel/tree/beta2.0)
