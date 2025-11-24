@@ -46,6 +46,7 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 ### 🛠 开源代码引用
 - [cmliu/edgetunnel/tree/beta2.0](https://github.com/cmliu/edgetunnel/tree/beta2.0)
 - [eooce/Cloudflare-proxy](https://github.com/eooce/Cloudflare-proxy)
+- [6Kmfi6HP/EDtunnel](https://github.com/6Kmfi6HP/EDtunnel)
 -------------------------------------------------------------
 ## 感谢您右上角加Star🌟
 [![Star History Chart](https://api.star-history.com/svg?repos=duquancai/cf-vless-st&type=Date)](https://www.star-history.com/#duquancai/cf-vless-st&Date)
