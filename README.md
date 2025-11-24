@@ -22,9 +22,7 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
 2. workers、pages、snippets都可以部署，纯手搓443系6个端口节点ss+ws+tls
 3. snippets部署的，william的反代**域名**"不支持"
 4. SS纯手搓示意图（以v2rayN客户端为例）
-
-   <img width="700" height="600" alt="image" src="https://github.com/user-attachments/assets/dd938d8d-c5a4-469b-99b2-5b39ddbf9ac8" />
-
+   ![SS手搓图例](/image/SS手搓图例.png)
 ### 三、优选IP的运用
 | IPv4 | IPv6 | Domain |
 |------|------|------|
@@ -36,9 +34,8 @@ v2rayN客户端的单节点路径设置代理ip，通过代理客户端路径传
   -------------------------------------------------------------
 ### 四、客户端推荐
 #### 点击名称即跳转到官方下载地址
-1. 安卓Android：[v2rayNG](https://github.com/2dust/v2rayNG/tags)、[Nekobox](https://github.com/starifly/NekoBoxForAndroid/releases)、[Karing](https://github.com/KaringX/karing/tags) <br>
-
-2. 电脑Windows：[v2rayN](https://github.com/2dust/v2rayN/tags)、[Hiddify](https://github.com/hiddify/hiddify-next/tags)、[Karing](https://github.com/KaringX/karing/tags)
+1. 安卓Android：[v2rayNG](https://github.com/2dust/v2rayNG/tags)<br>
+2. 电脑Windows：[v2rayN](https://github.com/2dust/v2rayN/tags)
 -------------------------------------------------------------
 ### 🛠 开源代码引用
 - [eooce/Cloudflare-proxy](https://github.com/eooce/Cloudflare-proxy)
